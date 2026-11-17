@@ -1,13 +1,15 @@
+import {disposeScene} from './dispose-scene.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export function createExperience(container){
+ let disposed=false;
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
  renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio,1.5),2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;container.appendChild(renderer.domElement);
  const scene=new THREE.Scene();scene.background=new THREE.Color('#ffffff');
  const camera=new THREE.PerspectiveCamera(36,1,.1,160);
- const pmrem=new THREE.PMREMGenerator(renderer);const environment=new RoomEnvironment();scene.environment=pmrem.fromScene(environment,.04).texture;scene.environmentIntensity=.8;environment.dispose();pmrem.dispose();
+ const pmrem=new THREE.PMREMGenerator(renderer);const environment=new RoomEnvironment();const environmentTarget=pmrem.fromScene(environment,.04);scene.environment=environmentTarget.texture;scene.environmentIntensity=.8;environment.dispose();pmrem.dispose();
  scene.add(new THREE.HemisphereLight(0xf4f8ff,0x9eaec5,1.1));
  const sun=new THREE.DirectionalLight(0xfff8ee,2.5);sun.position.set(8,18,12);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-21;sun.shadow.camera.right=21;sun.shadow.camera.top=21;sun.shadow.camera.bottom=-21;sun.shadow.bias=-.0003;sun.shadow.normalBias=.03;scene.add(sun);scene.add(sun.target);
  const fill=new THREE.DirectionalLight(0xa9cfff,1.2);fill.position.set(-12,8,-8);scene.add(fill);
@@ -188,9 +190,11 @@ export function createExperience(container){
   scene.background.set('#edf5ff');sun.position.set(8,15,12);sun.target.position.set(-1,1,0);
   renderer.render(scene,camera);
  }
- function renderLast(){if(flightMode)updateFlight(flightProgress,lastMobile);else update(lastP,lastMobile,lastReduce);}
+ function renderLast(){if(disposed)return;if(flightMode)updateFlight(flightProgress,lastMobile);else update(lastP,lastMobile,lastReduce);}
  function resize(){width=container.clientWidth;height=container.clientHeight;renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();renderLast();}
  const observer=new ResizeObserver(resize);observer.observe(container);resize();document.fonts.ready.then(renderLast);
- renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();document.body.classList.add('no-webgl');});
- return {update,updateFlight};
+ const onContextLost=event=>{event.preventDefault();document.body.classList.add('no-webgl');};
+ renderer.domElement.addEventListener('webglcontextlost',onContextLost);
+ function dispose(){disposed=true;observer.disconnect();renderer.domElement.removeEventListener('webglcontextlost',onContextLost);disposeScene(scene,renderer,environmentTarget);}
+ return {update,updateFlight,dispose};
 }

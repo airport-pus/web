@@ -4,8 +4,8 @@
 
 ## 사용 기술
 
-- HTML5, CSS3, JavaScript ES Modules
-- Vite: 로컬 개발 서버 및 프로덕션 빌드
+- Next.js App Router, React, CSS3, JavaScript ES Modules
+- Next.js: 서버 렌더링, 로컬 개발 서버 및 프로덕션 빌드
 - Three.js: 3D 모델, 조명, 카메라와 애니메이션
 - IntersectionObserver, requestAnimationFrame: 화면 진입 감지와 스크롤 연출
 - Pretendard: 웹 폰트
@@ -13,9 +13,10 @@
 ## 실행
 
 ```sh
-npm install
+npm ci
 npm run dev
 npm run build
+npm run start
 ```
 
 로컬 주소: http://127.0.0.1:5173/
@@ -29,3 +30,7 @@ npm run build
 3D는 Three.js 실시간 렌더링입니다. 화면 안에 있는 장면만 재생하고, 각 캔버스의 그리기 영역을 제한하여 다른 섹션과 겹치지 않게 했습니다. 모션 감소 설정에서는 정지 장면을 표시합니다. 표시 수치와 항공편은 소개용 고정 데이터이며 실시간 API가 아닙니다.
 
 AI 기능과 앱 다운로드는 출시 준비 안내를 표시합니다. AI 상세 소개는 추후 추가합니다.
+
+## Next.js 구성
+
+`app/page.jsx`는 기존 마크업을 서버에서 렌더링하고, `app/landing-runtime.jsx`는 hydration 후 3D와 스크롤 동작을 초기화합니다. CSS, 에셋, 3D 모델, 카메라 경로는 기존 구현을 유지합니다. 클라이언트 재마운트 시 이벤트·옵저버·애니메이션·WebGL 자원을 해제합니다. 개발 서버와 프로덕션 서버는 동일한 5173 포트를 사용하므로 하나만 실행하세요. Node.js 20.9 이상이 필요합니다.

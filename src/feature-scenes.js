@@ -1,9 +1,11 @@
+import {disposeScene} from './dispose-scene.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export function mountFeatureScenes(){
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ const cleanups=[];
  document.querySelectorAll('[data-feature-scene]').forEach(host=>{
   let engine,visible=false,raf=0,last=0,elapsed=0;
   const card=host.closest('[data-story-card]');
@@ -16,18 +18,26 @@ export function mountFeatureScenes(){
    if(!raf)raf=requestAnimationFrame(tick);
   }
   function tick(now){raf=0;if(!isActive()){sync();return;}elapsed+=last?Math.min((now-last)/1000,.05):0;last=now;engine.render(reduced.matches?0:elapsed);if(!reduced.matches)raf=requestAnimationFrame(tick);}
-  new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();},{rootMargin:'0px'}).observe(host);
+  const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();},{rootMargin:'0px'});observer.observe(host);
   document.addEventListener('visibilitychange',sync);
   document.addEventListener('feature-activate',sync);
   reduced.addEventListener('change',sync);
+  cleanups.push(()=>{
+   visible=false;observer.disconnect();cancelAnimationFrame(raf);
+   document.removeEventListener('visibilitychange',sync);
+   document.removeEventListener('feature-activate',sync);
+   reduced.removeEventListener('change',sync);
+   engine?.dispose();host.classList.remove('scene-active');
+  });
  });
+ return ()=>cleanups.forEach(dispose=>dispose());
 }
 function build(host){
  const kind=host.dataset.featureScene,scene=new THREE.Scene();
  const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;host.appendChild(renderer.domElement);
  const camera=new THREE.PerspectiveCamera(35,1,.1,100);
  const pmrem=new THREE.PMREMGenerator(renderer),room=new RoomEnvironment();
- scene.environment=pmrem.fromScene(room,.04).texture;scene.environmentIntensity=.55;room.dispose();pmrem.dispose();
+ const environmentTarget=pmrem.fromScene(room,.04);scene.environment=environmentTarget.texture;scene.environmentIntensity=.55;room.dispose();pmrem.dispose();
  scene.add(new THREE.HemisphereLight(0xffffff,0xb5cbe7,2));const sun=new THREE.DirectionalLight(0xffffff,3);sun.position.set(6,12,9);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14});sun.shadow.normalBias=.03;scene.add(sun);
  const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.4,metalness:.06});const white=mat('#ffffff'),blue=mat('#3182f6'),navy=mat('#233e62'),silver=mat('#afc3de'),glass=mat('#83b4e7');
  const root=new THREE.Group();scene.add(root);
@@ -75,6 +85,6 @@ function build(host){
   }
   animate(t);renderer.render(scene,camera);
  }
- new ResizeObserver(()=>{renderer.setSize(host.clientWidth,host.clientHeight,false);render(0);}).observe(host);
- renderer.setSize(host.clientWidth,host.clientHeight,false);render(0);return {render};
+ const observer=new ResizeObserver(()=>{renderer.setSize(host.clientWidth,host.clientHeight,false);render(0);});observer.observe(host);
+ renderer.setSize(host.clientWidth,host.clientHeight,false);render(0);return {render,dispose(){observer.disconnect();disposeScene(scene,renderer,environmentTarget);}};
 }
