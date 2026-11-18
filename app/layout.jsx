@@ -1,4 +1,5 @@
-import '../src/style.css';
+import StyledComponentsRegistry from './styled-components-registry';
+import { GlobalStyles } from '../src/styles/global';
 
 export const metadata = {
  title: '산들 · 공항 가는 길이 가벼워져요',
@@ -9,5 +10,5 @@ export const metadata = {
 };
 
 export default function RootLayout({children}) {
- return <html lang="ko"><head><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" /></head><body>{children}</body></html>;
+ return <html lang="ko"><head><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" /></head><body><StyledComponentsRegistry><GlobalStyles />{children}</StyledComponentsRegistry></body></html>;
 }

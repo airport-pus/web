@@ -6,3 +6,7 @@ dist/
 out/
 .env*
 !.env.example
+
+# Browser verification artifacts
+test-results/
+playwright-report/

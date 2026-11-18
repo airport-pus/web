@@ -11,8 +11,8 @@ const flightSection=document.querySelector('.flight-scroll');
 const stage=document.querySelector('.flight-stage');
 let target=0,progress=0,raf=0;
 function measure(){const rect=flightSection.getBoundingClientRect();const pinTop=parseFloat(getComputedStyle(stage).top)||0;const distance=Math.max(1,flightSection.offsetHeight-stage.offsetHeight);target=Math.max(0,Math.min(1,(pinTop-rect.top)/distance));if(!raf)raf=requestAnimationFrame(frame);}
-function frame(){raf=0;progress+=(target-progress)*.075;if(Math.abs(target-progress)<.0001)progress=target;experience?.updateFlight(progress,innerWidth<800);if(progress!==target)raf=requestAnimationFrame(frame);}
-listen(window,'scroll',measure,{passive:true});listen(window,'resize',measure);measure();
+function frame(){raf=0;progress=reduced.matches?target:progress+(target-progress)*.075;if(Math.abs(target-progress)<.0001)progress=target;experience?.updateFlight(progress,innerWidth<800);if(progress!==target)raf=requestAnimationFrame(frame);}
+listen(window,'scroll',measure,{passive:true});listen(window,'resize',measure);listen(reduced,'change',measure);measure();
 let toastTimer;function notice(text){const t=document.getElementById('ai-toast');clearTimeout(toastTimer);t.textContent=text;t.classList.add('show');toastTimer=setTimeout(()=>{t.classList.remove('show');t.textContent='';},2200);}
 listen(document.getElementById('mcp-button'),'click',()=>notice('AI 연결 기능을 준비하고 있어요.'));
 document.querySelectorAll('.app-download').forEach(b=>listen(b,'click',()=>notice('산들 앱은 출시 준비 중이에요.')));

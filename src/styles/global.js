@@ -1,0 +1,94 @@
+'use client';
+
+import { createGlobalStyle } from 'styled-components';
+
+// Shared defaults and layout utilities keep their original cascade order.
+export const GlobalStyles = createGlobalStyle`
+  :root {
+    --ink: #191f28;
+    --ink2: #4e5968;
+    --ink3: #8b95a1;
+    --blue: #3182f6;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 60px;
+  }
+  body {
+    margin: 0;
+    background: #f7f9fc;
+    color: var(--ink2);
+    font: 17px/1.65 Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: inherit;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--ink);
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -.02em;
+  }
+  .wrap {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  :focus-visible {
+    outline: 2px solid #3182f6;
+    outline-offset: 5px;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: #fff;
+  }
+  .content-width {
+    max-width: 1120px;
+    margin: auto;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+  @media (prefers-reduced-motion:reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    * {
+      transition: none !important;
+    }
+  }
+  .section-shell {
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+  .section-eyebrow {
+    font-size: 14px;
+    color: #3182f6;
+    font-weight: 600;
+    margin: 0 0 22px;
+  }
+  @media (max-width:1400px) {
+    .section-shell {
+      margin-left: 40px;
+      margin-right: 40px;
+    }
+  }
+  @media (max-width:800px) {
+    .section-shell {
+      margin-left: 24px;
+      margin-right: 24px;
+    }
+    .section-eyebrow {
+      font-size: 11px;
+      margin-bottom: 15px;
+    }
+  }
+`;
