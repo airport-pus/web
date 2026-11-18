@@ -25,7 +25,7 @@ npm run start
 
 ## 기능 소개 섹션
 
-운항정보는 설명과 앱 화면 예시를 좌우로 배치하고, 공항 혼잡도와 주차 안내는 두 개의 카드로 구성합니다. 모바일에서는 한 열로 표시합니다. 각 기능에는 기존 3D와 상태·항공편·빈자리 정보를 조합했습니다. 첫 화면의 소파 장면과 헤더는 유지했습니다. 기능 소개 마크업은 `app/feature-sections.jsx`에서 관리합니다.
+중앙 제목과 설명 아래에 운항정보·공항 혼잡도·주차 안내 탭과 큰 카드 한 장을 배치합니다. 탭과 좌우 버튼으로 설명·3D·정보 예시를 함께 전환합니다. 탭은 방향키와 Home/End 키를 지원합니다. 모바일에서는 카드 안의 설명과 비주얼을 위아래로 배치합니다. 첫 화면의 소파 장면과 헤더는 유지했습니다. 기능 소개 마크업은 `app/feature-sections.jsx`에서 관리합니다.
 
 3D는 Three.js 실시간 렌더링입니다. 화면 안에 있는 장면만 재생하고, 각 캔버스의 그리기 영역을 제한하여 다른 섹션과 겹치지 않게 했습니다. 모션 감소 설정에서는 정지 장면을 표시합니다. 표시 수치와 항공편은 소개용 고정 데이터이며 실시간 API가 아닙니다.
 
@@ -68,3 +68,25 @@ npm run check:styles -- compare /tmp/sandeul-style-baseline http://127.0.0.1:517
 ## 첫 3D 구간의 휠 스크롤
 
 휠 입력을 가로채거나 누적하지 않습니다. 첫 구간의 페이지 이동은 브라우저가 처리하고, 3D 카메라만 원래 CSS 버전의 보간을 사용합니다. 올라갈 때와 내려갈 때 동일한 구간 높이와 진행률 계산을 사용합니다.
+
+### 실제 앱 화면과 영상 교체
+
+`src/landing-media.js`의 `selection`, `flights`, `crowd`, `parking`에 `{ type: "image" | "video", src, alt, poster? }`를 지정하면 해당 소개 화면을 실제 캡처 또는 녹화 영상으로 교체합니다. 파일은 `public/assets/app/`에 넣습니다. 미지정 시 소개용 UI가 표시됩니다. 영상은 사용자 재생 방식이며, 공항 선택 UI 자동 전환은 화면에 보일 때만 실행되고 모션 줄이기 설정에서는 정지합니다.
+
+### 출시 링크와 본문 3D
+
+스토어 출시 후 `src/store-links.js`의 `ios`와 `android`에 공식 설치 URL을 지정합니다. 비어 있으면 다운로드 안내 버튼과 출시 준비 문구가 표시됩니다. 본문 공항/MCP 장면은 `src/product-scenes.js`의 Three.js 장면이며 화면 밖에서는 렌더링을 멈춥니다. `notifications` 미디어 슬롯에는 실제 앱 푸시 캡처를 넣을 수 있습니다. AI 체험은 페이지당 1회 고정 응답이며 새로고침 시 초기화되는 퍼블리싱 데모입니다.
+
+### Landing layout / local previews
+
+Below the original hero and scroll scene, the landing follows a product-led structure: supported airports → app overview → three feature visuals → switchable travel scenarios → ticket push → airport 3D → MCP preview and connection → data/coverage panels → stores.
+
+- `app/travel-showcase.jsx`: selectable airport device preview and travel scenarios (illustrative content, not live flight queries).
+- `app/service-proof.jsx`: real supported scope and official source links; no customer-count or testimonial placeholders.
+- `src/landing-media.js`: replacement slots for actual app captures/videos; `src/store-links.js`: store destinations when available.
+- MCP preview remains one fixed example per page load; it does not send questions to an AI service.
+- Styling is scoped with styled-components; the approved first hero/3D is unchanged by this layout revision.
+
+### Simplified landing revision
+
+The supported-airport strip is unchanged. The current page keeps one app preview, three short feature descriptions, a compact push notification, the single-use MCP demo, source links, and the download close. The repeated scenario carousel, three feature illustrations, secondary airport/MCP 3D scenes, metrics, and integration diagram are no longer rendered. The original hero 3D is retained. `public/assets/surface-grain.svg` adds a subtle procedural texture to the pale blue showcase backgrounds.

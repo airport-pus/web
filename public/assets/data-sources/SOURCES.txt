@@ -1,0 +1,15 @@
+Original official website logo assets. Downloaded 2026-11-18.
+Used in the local design preview to identify public data sources, not partnerships.
+
+kac.png
+https://www.airport.co.kr/ajaxa/fileCpnt/fileView.do?gbn=x02&SITE_GROUP_NO=2&SITE_NO=2
+https://www.airport.co.kr/www/cms/frCon/index.do?MENU_ID=440
+
+incheon.png
+https://www.airport.kr/sites/co_ko/images/common/header-color.png
+https://www.airport.kr/co_ko/573/subview.do
+CI page states prior permission is required for use. Review before public release.
+
+data-go-kr.svg
+https://www.data.go.kr/common/img/logo.svg
+https://www.data.go.kr/

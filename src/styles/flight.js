@@ -357,7 +357,7 @@ export const FlightScroll = styled.section`
   :where(&).flight-scroll {
     height: 250svh;
     position: relative;
-    margin-bottom: 50px;
+    margin-bottom: 140px;
   }
   :where(&) .flight-stage {
     position: sticky;
@@ -389,7 +389,7 @@ export const FlightScroll = styled.section`
   @media (max-width:800px) {
     :where(&).flight-scroll {
       height: 215svh;
-      margin-bottom: 0;
+      margin-bottom: 80px;
     }
     :where(&) .flight-stage {
       height: 65svh;

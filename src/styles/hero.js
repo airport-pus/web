@@ -1,6 +1,19 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
+
+export const landingTitle = css`
+  font-family: Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 70px;
+  letter-spacing: -.02em;
+  color: #08090b;
+
+  @media (min-width:801px) and (max-width:1400px) { font-size: 44px; }
+  @media (min-width:801px) and (max-width:1150px) { font-size: 36px; line-height: 1.55; }
+  @media (max-width:800px) { font-size: 32px; line-height: 1.5; }
+`;
 
 // :where scopes these existing selectors without increasing their specificity.
 // Keep rule order: later declarations and media queries intentionally override earlier ones.
@@ -140,34 +153,15 @@ export const HeroIntro = styled.section`
     gap: 48px;
   }
   :where(&).hero-intro h1 {
-    font-family: Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    font-size: 48px;
-    font-weight: 600;
-    line-height: 70px;
-    letter-spacing: -.02em;
+    ${landingTitle}
   }
   @media (min-width:801px) and (max-width:1400px) {
     :where(&).hero-intro {
       grid-template-columns: minmax(0,1.7fr) minmax(0,1fr);
       gap: 32px;
     }
-    :where(&).hero-intro h1 {
-      font-size: 44px;
-      line-height: 70px;
-    }
-  }
-  @media (min-width:801px) and (max-width:1150px) {
-    :where(&).hero-intro h1 {
-      font-size: 36px;
-      line-height: 1.55;
-    }
   }
   @media (max-width:800px) {
-    :where(&).hero-intro h1 {
-      font-size: 32px;
-      line-height: 1.5;
-      letter-spacing: -.02em;
-      max-width: 570px;
-    }
+    :where(&).hero-intro h1 { max-width: 570px; }
   }
 `;

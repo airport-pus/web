@@ -1,4 +1,3 @@
-import {mountFeatureScenes} from './feature-scenes.js';
 import {createExperience} from './scene.js';
 export function mountLanding(){
 const events=new AbortController();
@@ -14,24 +13,25 @@ function measure(){const rect=flightSection.getBoundingClientRect();const pinTop
 function frame(){raf=0;progress=reduced.matches?target:progress+(target-progress)*.075;if(Math.abs(target-progress)<.0001)progress=target;experience?.updateFlight(progress,innerWidth<800);if(progress!==target)raf=requestAnimationFrame(frame);}
 listen(window,'scroll',measure,{passive:true});listen(window,'resize',measure);listen(reduced,'change',measure);measure();
 let toastTimer;function notice(text){const t=document.getElementById('ai-toast');clearTimeout(toastTimer);t.textContent=text;t.classList.add('show');toastTimer=setTimeout(()=>{t.classList.remove('show');t.textContent='';},2200);}
-listen(document.getElementById('mcp-button'),'click',()=>notice('AI 연결 기능을 준비하고 있어요.'));
+document.querySelectorAll('.mcp-connect').forEach(b=>listen(b,'click',()=>notice('MCP 연결 기능을 준비하고 있어요. 공개 시 연결 방법을 안내할게요.')));
 document.querySelectorAll('.app-download').forEach(b=>listen(b,'click',()=>notice('산들 앱은 출시 준비 중이에요.')));
 
-const disposeFeatures=mountFeatureScenes();
 
-// Chapters enter in reading order; ordinary scrolling stays under user control.
-const chapters=document.querySelectorAll('.feature-chapter');
-const chapterObserver=new IntersectionObserver(entries=>{
- entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('has-entered');chapterObserver.unobserve(entry.target);}});
-},{threshold:.12});
-chapters.forEach(chapter=>chapterObserver.observe(chapter));
+
+const ticketStage = document.querySelector('.ticket-stage');
+const ticketObserver = new IntersectionObserver(entries => {
+ if (entries.some(entry => entry.isIntersecting)) {
+  ticketStage.classList.add('is-visible');
+  ticketObserver.disconnect();
+ }
+}, {threshold: 0.3});
+if (ticketStage) ticketObserver.observe(ticketStage);
 
 return ()=>{
+ ticketObserver.disconnect();
  events.abort();
  cancelAnimationFrame(raf);
  clearTimeout(toastTimer);
- chapterObserver.disconnect();
- disposeFeatures();
  experience?.dispose();
  const toast=document.getElementById('ai-toast');
  toast?.classList.remove('show');

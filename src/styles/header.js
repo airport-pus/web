@@ -33,19 +33,23 @@ export const SiteHeader = styled.header`
     line-height: 1;
   }
   :where(&) .brand img {
-    width: 28px;
-    height: 28px;
+    display: block;
+    width: auto;
+    height: 30px;
     object-fit: contain;
     border-radius: 0;
   }
   :where(&).top nav {
     display: flex;
-    gap: 28px;
+    align-items: center;
+    gap: 20px;
     font-size: 15px;
     white-space: nowrap;
     min-width: 0;
   }
+  :where(&).top nav a,
   :where(&).top nav button {
+    text-decoration: none;
     font: inherit;
     color: var(--ink2);
     border: 0;
@@ -53,8 +57,23 @@ export const SiteHeader = styled.header`
     padding: 0;
     cursor: pointer;
   }
+  :where(&).top nav a:hover,
   :where(&).top nav button:hover {
     color: var(--ink);
+  }
+  :where(&).top nav .app-download {
+    padding: 8px 13px;
+    border-radius: 12px;
+    background: #f1f2f4;
+    color: #343941;
+    font-weight: 500;
+    line-height: 20px;
+  }
+  :where(&).top nav .app-download:hover { background: #e8eaed; }
+  @media (max-width:400px) {
+    :where(&).top .wrap, :where(&).top nav { gap: 8px; }
+    :where(&) .brand img { height: 24px; }
+    :where(&).top nav .app-download { padding-inline: 10px; }
   }
   @media (max-width:800px) {
     :where(&).top nav {

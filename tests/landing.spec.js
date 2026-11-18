@@ -9,18 +9,17 @@ for (const width of [390, 1440]) {
     await page.goto('/');
     await expect(page.locator('#scene canvas')).toHaveCount(1);
     await expect(page.locator('.top')).toHaveCSS('height', '60px');
-    await page.getByRole('button', { name: '앱 다운로드' }).click();
+    await page.getByRole('navigation', { name: '주요 메뉴' }).getByRole('button', { name: '앱 다운로드' }).click();
     await expect(page.getByRole('status')).toHaveText('산들 앱은 출시 준비 중이에요.');
     await expect(page.getByRole('status')).toHaveCSS('visibility', 'visible');
-    await page.getByRole('button', { name: 'AI에서 사용하기' }).click();
-    await expect(page.getByRole('status')).toHaveText('AI 연결 기능을 준비하고 있어요.');
-    for (const feature of ['flight', 'crowd', 'parking']) {
-      const host = page.locator(`[data-feature-scene="${feature}"]`);
-      await host.scrollIntoViewIfNeeded();
-      await expect(host).toHaveClass(/scene-active/);
-      await expect(host.locator('canvas')).toBeVisible();
-      expect(await host.locator('canvas').evaluate(e => e.width > 0 && e.height > 0)).toBe(true);
-    }
+    await page.getByRole('link', { name: 'AI에서 사용하기' }).click();
+    await page.getByRole('button', { name: '연결 안내' }).click();
+    await expect(page.getByRole('status')).toHaveText('MCP 연결 기능을 준비하고 있어요. 공개 시 연결 방법을 안내할게요.');
+    await expect(page.locator('.push-message')).toContainText('출발 시간이 변경됐어요');
+    await page.locator('.store-picker summary').click();
+    await page.getByRole('button', { name: 'App Store 다운로드 안내', exact: true }).click();
+    await expect(page.getByRole('status')).toHaveText('산들 앱은 출시 준비 중이에요.');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(errors).toEqual([]);
   });
 }
@@ -31,7 +30,7 @@ test('the server sends styled content before hydration', async ({ browser }) => 
   await page.goto('http://127.0.0.1:5175/');
   await expect(page.locator('h1')).toHaveCSS('font-size', '48px');
   await expect(page.locator('.top')).toHaveCSS('height', '60px');
-  await expect(page.locator('.chapter-visual').first()).toHaveCSS('height', '580px');
+  await expect(page.locator('.feature-visual').first()).toHaveCSS('border-radius', '32px');
   expect(await page.locator('style[data-styled]').count()).toBeGreaterThan(0);
   await context.close();
 });
