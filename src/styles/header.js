@@ -64,12 +64,12 @@ export const SiteHeader = styled.header`
   :where(&).top nav .app-download {
     padding: 8px 13px;
     border-radius: 12px;
-    background: #f1f2f4;
-    color: #343941;
+    background: #202124;
+    color: #fff;
     font-weight: 500;
     line-height: 20px;
   }
-  :where(&).top nav .app-download:hover { background: #e8eaed; }
+  :where(&).top nav .app-download:hover { background: #35363a; color: #fff; }
   @media (max-width:400px) {
     :where(&).top .wrap, :where(&).top nav { gap: 8px; }
     :where(&) .brand img { height: 24px; }

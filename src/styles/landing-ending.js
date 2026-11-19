@@ -1,36 +1,28 @@
 'use client';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { landingTitle } from './hero';
 
-export const LandingEnding = styled.section`
-  position: relative;
-  isolation: isolate;
-  text-align: center;
-  padding: clamp(72px, 7vw, 112px) 20px;
-  background: #fff;
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-image: radial-gradient(#bdc9d4 .7px, transparent .9px);
-    background-size: 12px 12px;
-    opacity: .43;
-    mask-image: radial-gradient(ellipse at center, #000 10%, transparent 73%);
-  }
-  .closing-app-icon {
-    display: grid;
-    place-items: center;
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 20px;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 4px 16px #34475a15;
-  }
-  h2 { ${landingTitle} margin: 0; }
-  p { margin: 14px 0 24px; font-size: clamp(14px, 1.3vw, 17px); color: #646d78; }
-  .store-picker { width: fit-content; margin: auto; }
+const routeDrift = keyframes`
+ from {transform:translateX(-1.5%) rotate(-8deg)} to {transform:translateX(1.5%) rotate(-5deg)}
+`;
+
+export const LandingEnding = styled.div`
+  position:relative; isolation:isolate; overflow:hidden; background:linear-gradient(#eaf4fb,#f8fbfd 70%,white);
+  .closing-panel {position:relative; isolation:isolate; overflow:hidden; text-align:center; padding:clamp(70px,8vw,120px) 20px 64px;}
+  .closing-panel::before {content:''; position:absolute; z-index:-1; inset:-35%;
+    background:repeating-radial-gradient(ellipse at 80% 130%,transparent 0 54px,#86b1ce3d 55px,transparent 57px 98px);
+    mask-image:linear-gradient(90deg,#000,transparent 48%,#000);}
+  @media(prefers-reduced-motion:no-preference){.closing-panel::before{animation:${routeDrift} 10s ease-in-out infinite alternate}}
+  .closing-app-icon {display:grid;place-items:center;width:60px;height:60px;border-radius:16px;background:white;margin:0 auto 20px;box-shadow:0 4px 20px #40607814}
+  h2 { ${landingTitle} font-size:clamp(46px,6vw,86px);line-height:1.13;letter-spacing:-.055em;margin:0;}
+  .closing-content > p {color:#53687a;font-size:16px;margin:16px 0 24px}
+  .store-picker {width:fit-content;margin:auto}
+  .airport-directory {display:grid;grid-template-columns:repeat(4,1fr);padding:20px 0 36px;gap:16px;border-bottom:1px solid #d7e4ed}
+  .airport-directory p {grid-column:1/-1;margin:0;color:#526b7e;font-size:14px}
+  .airport-directory div {display:grid;gap:3px}
+  .airport-directory b {font-size:clamp(30px,4vw,60px);line-height:1.08;color:#274256;letter-spacing:-.04em}
+  .airport-directory span {color:#4b6172;font-size:14px}
+  @media(max-width:600px){.airport-directory{grid-template-columns:repeat(2,1fr)}}
   summary {
     display: flex;
     align-items: center;

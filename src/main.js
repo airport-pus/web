@@ -18,17 +18,7 @@ document.querySelectorAll('.app-download').forEach(b=>listen(b,'click',()=>notic
 
 
 
-const ticketStage = document.querySelector('.ticket-stage');
-const ticketObserver = new IntersectionObserver(entries => {
- if (entries.some(entry => entry.isIntersecting)) {
-  ticketStage.classList.add('is-visible');
-  ticketObserver.disconnect();
- }
-}, {threshold: 0.3});
-if (ticketStage) ticketObserver.observe(ticketStage);
-
 return ()=>{
- ticketObserver.disconnect();
  events.abort();
  cancelAnimationFrame(raf);
  clearTimeout(toastTimer);

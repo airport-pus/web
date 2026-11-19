@@ -5,7 +5,6 @@ import ProductStorySection from "./product-story";
 import { SiteFooter } from "../src/styles/footer";
 import { Toast } from "../src/styles/toast";
 import DataAndAISections from "./data-and-ai-sections";
-import ServiceProof from "./service-proof";
 import Ending from "./landing-ending";
 import LandingRuntime from "./landing-runtime";
 
@@ -20,9 +19,20 @@ export default function HomePage() {
 
 <ProductStorySection />
 <DataAndAISections />
-<ServiceProof />
-<Ending />
-</main><SiteFooter className="footer"><div className="wrap"><div className="footer-info"><strong>산들</strong><p>국내 공항 통합 정보 조회 서비스</p><a href="https://github.com/airport-pus/airport-kr-client" target="_blank" rel="noopener noreferrer">개발자 GitHub ↗</a><p>Made by. 신희성 · 김승빈 · 김규민</p><small>© 2026 산들. All rights reserved.</small></div></div></SiteFooter><Toast id="ai-toast" role="status" aria-live="polite"></Toast>
+</main>
+<Ending>
+<SiteFooter>
+  <div className="section-shell">
+    <img src="/brand/sandeul.svg" width="90" height="24" alt="Sandeul" />
+    <div className="footer-info">
+      <div className="contact"><a href="mailto:contact@sandeul.app">E. contact@sandeul.app</a><span aria-hidden="true">|</span><span>Made by. 신희성 김승빈</span></div>
+      <span>© 2026 Sandeul. All rights reserved.</span>
+    </div>
+    <nav aria-label="서비스 정보"><a href="/data">데이터 안내</a><a href="https://github.com/airport-pus/web" target="_blank" rel="noopener noreferrer">개발자 GitHub ↗</a></nav>
+  </div>
+</SiteFooter>
+</Ending>
+<Toast id="ai-toast" role="status" aria-live="polite"></Toast>
 <LandingRuntime />
 </>;
 }

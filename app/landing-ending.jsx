@@ -1,14 +1,15 @@
 import { LandingEnding } from '../src/styles/landing-ending';
 import { storeLinks } from '../src/store-links';
 
-export default function Ending() {
+export default function Ending({ children }) {
   return (
-    <LandingEnding aria-labelledby="closing-title">
+    <LandingEnding>
+      <section aria-labelledby="closing-title" className="closing-panel">
       <div className="closing-content">
         <span className="closing-app-icon" aria-hidden="true">
           <img src="/brand/symbol.svg" width="40" height="40" alt="" />
         </span>
-        <h2 id="closing-title">공항 가는 날,<br />산들과 가볍게 출발하세요.</h2>
+        <h2 id="closing-title">다음 출발은,<br />산들과 함께.</h2>
         <p>iPhone과 Android에서 산들을 만나보세요.</p>
         <details className="store-picker">
           <summary>앱 다운로드 <span aria-hidden="true">›</span></summary>
@@ -23,6 +24,14 @@ export default function Ending() {
           </div>
         </details>
       </div>
+      </section>
+      <div className="airport-directory section-shell"><p>현재 국내 4개 공항을 지원합니다</p>
+        {[
+          ['PUS','김해국제공항'], ['ICN','인천국제공항'],
+          ['GMP','김포국제공항'], ['CJU','제주국제공항'],
+        ].map(([code,name]) => <div key={code}><b>{code}</b><span>{name}</span></div>)}
+      </div>
+      {children}
     </LandingEnding>
   );
 }
