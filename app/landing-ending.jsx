@@ -25,12 +25,6 @@ export default function Ending({ children }) {
         </details>
       </div>
       </section>
-      <div className="airport-directory section-shell"><p>현재 국내 4개 공항을 지원합니다</p>
-        {[
-          ['PUS','김해국제공항'], ['ICN','인천국제공항'],
-          ['GMP','김포국제공항'], ['CJU','제주국제공항'],
-        ].map(([code,name]) => <div key={code}><b>{code}</b><span>{name}</span></div>)}
-      </div>
       {children}
     </LandingEnding>
   );
