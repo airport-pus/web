@@ -8,51 +8,39 @@ const features = [
  {key:'crowd', label:'보안검색장 혼잡도', value:'2구간 혼잡', detail:'1구간 여유　·　3구간 보통',title:'공항에 가기 전에, 혼잡도부터.',description:'구간별 혼잡 현황과 시간대별 승객 수를 살펴보세요. 기다릴 시간까지 생각하고 출발할 수 있어요.'},
  {key:'parking', label:'국내선 주차장', value:'빈자리에 주차 후 예상 요금 계산', detail:'예시 요율로 90분 이용 시 3,000원',title:'주차 자리와 예상 요금을 함께.',description:'빈자리가 있는 주차장을 찾고, 차를 세워둘 시간과 할인 조건으로 예상 요금을 확인하세요.'},
 ];
-function ScenePlayback({kind, zone, allowMotion}) {
+function playbackAsset(name, format) {
+ return `/assets/feature-playback/${name}.${format}?v=2`;
+}
+
+function ScenePlayback({kind, zone}) {
  const ref = useRef(null);
  const clip = kind === 'crowd' && zone !== 1 ? `crowd-${zone + 1}` : kind;
  useEffect(() => {
    const video = ref.current;
-   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
    let visible = false;
    function sync() {
-     video.loop = allowMotion || !reduced.matches;
-     if (visible && !document.hidden && video.loop) video.play().catch(() => { video.controls = true; });
+     if (visible && !document.hidden) video.play().catch(() => { video.controls = true; });
      else video.pause();
    }
    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); });
    observer.observe(video);
    document.addEventListener('visibilitychange', sync);
-   reduced.addEventListener('change', sync);
    return () => {
      observer.disconnect();
      document.removeEventListener('visibilitychange', sync);
-     reduced.removeEventListener('change', sync);
      video.pause();
    };
- }, [clip, allowMotion]);
- return <video ref={ref} muted playsInline preload="none" aria-hidden="true"
-   poster={`/assets/feature-playback/${kind}.webp`} src={`/assets/feature-playback/${clip}.mp4`} />;
+ }, [clip]);
+ return <video ref={ref} muted loop playsInline preload="none" aria-hidden="true"
+   poster={playbackAsset(kind, 'webp')} src={playbackAsset(clip, 'mp4')} />;
 }
 export default function TravelShowcase() {
  const section = useRef(null);
  const [unavailable, setUnavailable] = useState({});
- const [allowMotion, setAllowMotion] = useState(false);
- function chooseMotion(enabled) {
-   setAllowMotion(enabled);
-   section.current.dataset.allowMotion = String(enabled);
-   try { localStorage.setItem('sandeul.featureMotion', String(enabled)); } catch {}
-   section.current.dispatchEvent(new Event('feature-motion-change'));
- }
  const [zone, setZone] = useState(1);
  const [minutes, setMinutes] = useState(90);
  const congestion = ['여유','혼잡','보통'];
  useEffect(() => {
-   try {
-     const enabled = localStorage.getItem('sandeul.featureMotion') === 'true';
-     section.current.dataset.allowMotion = String(enabled);
-     setAllowMotion(enabled);
-   } catch {}
    let mounted = true;
    let dispose;
    import('../src/feature-scenes').then(({ mountFeatureScenes }) => {
@@ -81,12 +69,12 @@ export default function TravelShowcase() {
      <article key={feature.key}>
        <div className="feature-visual" data-media-slot={feature.key}>
          <img className="scene-fallback" alt="" loading="lazy"
-           src={`/assets/feature-playback/${feature.key === 'flights' ? 'flight' : feature.key}.webp`} />
+           src={playbackAsset(feature.key === 'flights' ? 'flight' : feature.key, 'webp')} />
          <div className="feature-model" data-editorial="true" data-zone={feature.key === 'crowd' ? zone : undefined}
            data-feature-scene={feature.key === 'flights' ? 'flight' : feature.key}
            role="img" aria-label={feature.key === 'flights' ? feature.label + ', ' + feature.value + ', ' + feature.detail : feature.label} />
          {unavailable[feature.key === 'flights' ? 'flight' : feature.key] &&
-           <ScenePlayback kind={feature.key === 'flights' ? 'flight' : feature.key} zone={zone} allowMotion={allowMotion} />}
+           <ScenePlayback kind={feature.key === 'flights' ? 'flight' : feature.key} zone={zone} />}
          {feature.key === 'crowd' && <output className="scene-reading">보안검색 {zone+1}구간 <b>{congestion[zone]}</b></output>}
          {feature.key === 'parking' && <output className="scene-reading parking-estimate">{minutes}분 예상 요금 <b>{(Math.ceil(minutes/30)*1000).toLocaleString('ko-KR')}원</b></output>}
        </div>
@@ -97,13 +85,9 @@ export default function TravelShowcase() {
      </article>
    ))}
  </div>
- <button className="feature-motion" type="button" aria-pressed={allowMotion}
-   onClick={() => chooseMotion(!allowMotion)}>카드 애니메이션 {allowMotion ? '멈추기' : '재생'}</button>
  </Showcase>}
 const Showcase=styled.section`
  max-width:1320px; margin:0 auto; padding:0 clamp(20px,4vw,60px) clamp(88px,11vw,170px); scroll-margin-top:60px;
- .feature-motion { display:none; }
- @media(prefers-reduced-motion:reduce){ .feature-motion { display:block; margin:24px auto 0; padding:8px 14px; } }
  .feature-intro {
    --title-offset:clamp(28px,3vw,52px);
    padding:calc(clamp(92px,8vw,152px) + var(--title-offset)) 0 clamp(20px,2vw,32px);
@@ -113,7 +97,6 @@ const Showcase=styled.section`
    ${landingTitle} margin:0; font-size:min(6.6vw, 64px); white-space:nowrap;
    font-weight:700; line-height:1.26; letter-spacing:-.048em;
  }
- .feature-intro h2 .brand-name { color:#287aa9; }
  .feature-intro p {
    margin:calc(clamp(78px,7vw,132px) - var(--title-offset)) auto 0; font-size:clamp(18px,1.45vw,26px);
    font-weight:650; line-height:1.75; letter-spacing:-.045em; word-break:keep-all; text-wrap:balance;
@@ -130,6 +113,7 @@ const Showcase=styled.section`
  article:last-child .feature-visual { border-radius:0 32px 32px 0; }
  .feature-model,.scene-fallback { position:absolute; inset:0; width:100%; height:100%; }
  .scene-fallback,.feature-visual video { object-fit:contain; }
+ .feature-visual:is([data-media-slot="crowd"], [data-media-slot="parking"]) :is(.scene-fallback, video) { object-fit:cover; }
  .feature-visual video { position:absolute; inset:0; width:100%; height:100%; }
  .feature-model canvas { display:block; width:100%; height:100%; }
  .feature-visual:has([data-ready]) .scene-fallback, .feature-visual:has(video) .scene-fallback { display:none; }
