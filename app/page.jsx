@@ -10,7 +10,7 @@ import LandingRuntime from "./landing-runtime";
 export default function HomePage() {
  return <>
 
-<SiteHeader className="top"><div className="wrap"><a className="brand" href="#" aria-label="산들 홈"><img src="/brand/sandeul.svg" alt="" width="250" height="64" /></a><nav aria-label="주요 메뉴"><a id="mcp-button" href="#ai-use">AI에서 사용하기</a><button type="button" className="app-download">앱 다운로드</button></nav></div></SiteHeader>
+<SiteHeader className="top"><div className="wrap"><a className="brand" href="#" aria-label="산들 홈"><img src="/brand/sandeul.svg" alt="" width="250" height="64" /></a><nav aria-label="주요 메뉴"><button type="button" className="app-download">앱 다운로드</button></nav></div></SiteHeader>
 
 <main>
 <HeroIntro className="hero-intro"><h1>공항 정보는 한눈에,<br />여행 전 산들에서 시작하세요.</h1><div className="hero-action"><p className="hero-desc">비행기 출발과 도착 시간부터 공항 혼잡도, 주차 정보까지<br />여행에 필요한 국내 공항 정보를 한곳에 모아, 산들과 가볍게 출발하세요.</p><button className="download app-download">앱 다운로드</button></div></HeroIntro>

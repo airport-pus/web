@@ -2,7 +2,8 @@ import { LandingEnding } from '../src/styles/landing-ending';
 import { storeLinks } from '../src/store-links';
 import AirportIllustration from './airport-illustration';
 
-export default function Ending({ children }) {
+// The supported-airport list is kept but not rendered (simplified page); pass showAirports to bring it back.
+export default function Ending({ children, showAirports = false }) {
   return (
     <LandingEnding>
       <section aria-labelledby="closing-title" className="closing-panel">
@@ -26,7 +27,7 @@ export default function Ending({ children }) {
         </details>
       </div>
       </section>
-      <section className="airport-directory" aria-labelledby="airport-directory-title">
+      {showAirports && <section className="airport-directory" aria-labelledby="airport-directory-title">
         <p id="airport-directory-title">현재 국내 4개 공항을 지원합니다</p>
         <ul>
           {[
@@ -34,7 +35,7 @@ export default function Ending({ children }) {
             ['GMP','김포국제공항'], ['CJU','제주국제공항'],
           ].map(([code,name]) => <li key={code}><div className="airport-visual"><AirportIllustration code={code} /></div><b>{code}</b><span>{name}</span></li>)}
         </ul>
-      </section>
+      </section>}
       {children}
     </LandingEnding>
   );

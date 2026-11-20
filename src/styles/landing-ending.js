@@ -6,7 +6,8 @@ import { skyCard, skyCardWide, cardStripRadius, cardTextInset, cardTitle, cardTe
 export const LandingEnding = styled.div`
   position:relative; background:white;
   /* Closing: one wide sky card with the feature-intro title voice. */
-  .closing-panel { ${sectionFrame} padding-bottom:0; text-align:center; }
+  .closing-panel { ${sectionFrame} padding-bottom:clamp(56px,6vw,88px); border-bottom:1px solid #e3ebf1; text-align:center; }
+  .closing-panel:has(+ .airport-directory) { padding-bottom:0; border-bottom:0; }
   .closing-content { ${skyCardWide} border-radius:32px; padding:clamp(64px,8vw,112px) 24px; }
   .closing-app-icon {display:grid;place-items:center;width:60px;height:60px;border-radius:16px;background:white;margin:0 auto 22px;box-shadow:0 1px 2px #1d3a500d,0 8px 24px #1d3a500f}
   h2 { ${landingTitle} font-size:clamp(32px,4.6vw,60px); line-height:1.2; margin:0; }

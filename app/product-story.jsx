@@ -1,14 +1,10 @@
-import TicketReminder from './ticket-reminder';
 import TravelShowcase from './travel-showcase';
-import DataAndAISections from './data-and-ai-sections';
 import { ProductStory } from '../src/styles/product-story';
+// Simplified page: hero -> features -> download -> footer.
+// TicketReminder (./ticket-reminder) and DataAndAISections (./data-and-ai-sections) are kept
+// on disk but not rendered; they may return as the app-screens section after the app ships.
 export default function ProductStorySection() {
  return <ProductStory id="product-story">
     <TravelShowcase />
-    {/* Ticket reminder and AI demo continue the feature grid as a second card row. */}
-    <div className="companion-grid">
-      <TicketReminder />
-      <DataAndAISections />
-    </div>
  </ProductStory>;
 }

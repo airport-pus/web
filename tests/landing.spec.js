@@ -13,12 +13,9 @@ for (const width of [390, 1440]) {
     await page.getByRole('navigation', { name: '주요 메뉴' }).getByRole('button', { name: '앱 다운로드' }).click();
     await expect(page.locator('#ai-toast')).toHaveText('산들 앱은 출시 준비 중이에요.');
     await expect(page.locator('#ai-toast')).toHaveCSS('visibility', 'visible');
-    await page.getByRole('link', { name: 'AI에서 사용하기' }).click();
-    await page.getByRole('button', { name: '연결 안내' }).click();
-    await expect(page.locator('#ai-toast')).toHaveText('MCP 연결 기능을 준비하고 있어요. 공개 시 연결 방법을 안내할게요.');
-    await expect(page.locator('.notification-meta time')).toHaveAttribute('datetime', '12:50');
-    await page.getByRole('button', { name: '30분 전', exact: true }).click();
-    await expect(page.locator('.notification-meta time')).toHaveAttribute('datetime', '13:50');
+    // AI(MCP) and ticket-reminder sections are no longer rendered: no header link, no anchors.
+    await expect(page.getByRole('link', { name: 'AI에서 사용하기' })).toHaveCount(0);
+    await expect(page.locator('#ai-use, .companion-grid, .airport-directory')).toHaveCount(0);
     await page.locator('.store-picker summary').click();
     await page.getByRole('button', { name: 'App Store 다운로드 안내', exact: true }).click();
     await expect(page.locator('#ai-toast')).toHaveText('산들 앱은 출시 준비 중이에요.');

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-test('AI preview gives one explicit sample answer per page and prevents repeated requests', async ({ page }) => {
+// The AI section is not rendered on the simplified page (kept on disk for later).
+test.skip('AI preview gives one explicit sample answer per page and prevents repeated requests', async ({ page }) => {
   await page.goto('/');
   const demo = page.locator('#ai-preview');
   const input = demo.getByRole('textbox', { name: '공항 정보 질문' });
