@@ -3,17 +3,25 @@ import {disposeScene} from './dispose-scene.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { softBox, lathe, tube, bake, blobTexture, contactShadow } from './toy-kit.js';
 
+export function isSoftwareGL(renderer){
+ try{const gl=renderer.getContext(),ext=gl.getExtension('WEBGL_debug_renderer_info');return /swiftshader|llvmpipe|software/i.test(ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):'');}catch{return false;}
+}
 export function createExperience(container){
  let disposed=false;
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
- renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio,1.5),2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;container.appendChild(renderer.domElement);
+ const small=innerWidth<800;renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio,1.5),2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1;container.appendChild(renderer.domElement);
+ // Software WebGL (no GPU: SwiftShader/llvmpipe) is fill-rate bound; render at 1x there.
+ if(isSoftwareGL(renderer))renderer.setPixelRatio(1);
  const scene=new THREE.Scene();scene.background=new THREE.Color('#ffffff');
  const camera=new THREE.PerspectiveCamera(36,1,.1,160);
- const pmrem=new THREE.PMREMGenerator(renderer);const environment=new RoomEnvironment();const environmentTarget=pmrem.fromScene(environment,.04);scene.environment=environmentTarget.texture;scene.environmentIntensity=.8;environment.dispose();pmrem.dispose();
- scene.add(new THREE.HemisphereLight(0xf4f8ff,0x9eaec5,1.1));
- const sun=new THREE.DirectionalLight(0xfff8ee,2.5);sun.position.set(8,18,12);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-21;sun.shadow.camera.right=21;sun.shadow.camera.top=21;sun.shadow.camera.bottom=-21;sun.shadow.bias=-.0003;sun.shadow.normalBias=.03;scene.add(sun);scene.add(sun.target);
+ const pmrem=new THREE.PMREMGenerator(renderer);const environment=new RoomEnvironment();const environmentTarget=pmrem.fromScene(environment,.04);scene.environment=environmentTarget.texture;scene.environmentIntensity=.6;environment.dispose();pmrem.dispose();
+ scene.add(new THREE.HemisphereLight(0xf4f8ff,0x8ea3c0,.8));
+ const sun=new THREE.DirectionalLight(0xfff8ee,2.9);sun.position.set(8,18,12);sun.castShadow=true;sun.shadow.mapSize.setScalar(small?1024:2048);sun.shadow.radius=small?3:5;sun.shadow.camera.left=-21;sun.shadow.camera.right=21;sun.shadow.camera.top=21;sun.shadow.camera.bottom=-21;sun.shadow.bias=-.0003;sun.shadow.normalBias=.03;scene.add(sun);scene.add(sun.target);
  const fill=new THREE.DirectionalLight(0xa9cfff,1.2);fill.position.set(-12,8,-8);scene.add(fill);
+ // Rim light from behind separates soft white forms from the pale background.
+ const rim=new THREE.DirectionalLight(0xdfeeff,1.1);rim.position.set(-4,9,-14);scene.add(rim);
  const mat=(color,metalness=0,roughness=.5)=>new THREE.MeshStandardMaterial({color,metalness,roughness});
  const white=mat('#f9fbff',.12,.27),blue=mat('#3182f6',.35,.25),navy=mat('#172f53',.3,.3),glass=mat('#6e98c0',.6,.17),silver=mat('#b7c5d6',.65,.23),tarmac=mat('#ced8e6',.05,.8),dark=mat('#243b58',.3,.45);
  const groups=[];
@@ -108,62 +116,90 @@ export function createExperience(container){
  skyClouds.visible=false;
  // Preparing at home: a seated traveler checks Sandeul before leaving.
  const home=new THREE.Group();scene.add(home);
- const upholstery=mat('#dce9f8',0,.92),shirt=mat('#3182f6',0,.8),trousers=mat('#eef3fa',0,.85),skin=mat('#edd7c6',0,.8),hair=mat('#253b58',0,.9);
+ // Plain standard materials: physical sheen cost ~1.7x frame time in software rendering for little visible gain.
+ const fabric=color=>new THREE.MeshStandardMaterial({color,roughness:.82});
+ const upholstery=fabric('#c4d7ee','#f2f7ff'),cushion=fabric('#dce8f6'),shirt=fabric('#3182f6','#9cc3ff'),trousers=fabric('#2c4a77','#7f9cc8'),skin=mat('#f1d2bd',0,.62),hair=mat('#2b3149',0,.55);
+ const oak=mat('#d9bf9b',0,.55),soft=mat('#ffffff',0,.42),sole=mat('#a9bfdb',0,.6);
+ const face={skin,hair,eye:mat('#1d2433',0,.25),blush:mat('#f3aaa0',0,.7),mouth:mat('#b9655c',0,.5),white:soft,sole};
+ const blob=blobTexture();
  // Continuous studio floor: no raised square base or visible platform edges.
  const homeFloor=mesh(home,new THREE.PlaneGeometry(200,200),new THREE.MeshBasicMaterial({color:'#edf5ff',toneMapped:false}),0,-.12,0);homeFloor.rotation.x=-Math.PI/2;homeFloor.castShadow=false;
- const floorShadow=mesh(home,new THREE.PlaneGeometry(200,200),new THREE.ShadowMaterial({opacity:.12}),0,-.115,0);floorShadow.rotation.x=-Math.PI/2;floorShadow.castShadow=false;
+ const floorShadow=mesh(home,new THREE.PlaneGeometry(200,200),new THREE.ShadowMaterial({opacity:.17,color:'#3b5f94'}),0,-.115,0);floorShadow.rotation.x=-Math.PI/2;floorShadow.castShadow=false;
  const homeWall=mesh(home,new THREE.PlaneGeometry(200,100),new THREE.MeshBasicMaterial({color:'#edf5ff',toneMapped:false}),0,45,-4.7);homeWall.castShadow=false;
- // Window and curtains make this a living room rather than an airport lounge.
- box(home,3.8,3.7,.12,white,2.8,3.1,-4.5);
- box(home,3.45,3.35,.04,mat('#bcdcff',0,.8),2.8,3.1,-4.41);
- box(home,.08,3.4,.06,white,2.8,3.1,-4.35);box(home,3.5,.08,.06,white,2.8,3.1,-4.35);
- for(const x of [.7,4.9])box(home,.55,4.7,.25,white,x,2.8,-4.1,.12);
- const rug=mesh(home,new THREE.CircleGeometry(4.5,80),mat('#e6effb'),0,-.08,1);rug.rotation.x=-Math.PI/2;rug.scale.y=.73;
- // Deep upholstered sofa, rounded cushions and low feet.
- box(home,6.1,.8,2.7,upholstery,-1,.65,-.65,.25);
- box(home,6.1,2.1,.6,upholstery,-1,1.55,-1.8,.25);
- for(const x of [-3.8,1.8])box(home,.55,1.3,2.7,upholstery,x,1.1,-.65,.23);
- for(const x of [-2.45,.4])box(home,2.65,.35,2.15,white,x,1.1,-.45,.16);
- for(const x of [-3.3,1.3])for(const z of [-1.5,.3])cylinder(home,.09,.1,.35,silver,x,.04,z);
- const pillow=box(home,1.2,1.1,.35,mat('#9dc4fa'),.8,1.75,-1.25,.17);pillow.rotation.z=-.13;
- // Smooth limbs connect at joints; no floating body parts.
- function limb(parent,start,end,r,material){const av=new THREE.Vector3(...start),bv=new THREE.Vector3(...end),delta=bv.clone().sub(av);const part=mesh(parent,new THREE.CapsuleGeometry(r,Math.max(.02,delta.length()-2*r),5,12),material);part.position.copy(av).add(bv).multiplyScalar(.5);part.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());return part;}
- const traveler=new THREE.Group();home.add(traveler);traveler.position.set(-1,0,0);
- const head = buildTraveler(traveler, {mesh,sphere,cylinder,box,limb}, {shirt,skin,hair,navy,trousers,white});
- const homePhone=phone(home,'/assets/sandeul-home-screen.svg');homePhone.scale.setScalar(.17);homePhone.position.set(-.93,2.13,1.46);homePhone.rotation.set(.45,Math.PI+.08,0);
+ const add=(parent,geo,m,x,y,z)=>mesh(parent,geo,m,x,y,z);
+ // Window with a soft sky, sill, and gathered curtains on a rod.
+ const room=new THREE.Group();home.add(room);
+ const frame=new THREE.Shape(roundedShape(3.8,3.7,.22).getPoints(12));frame.holes.push(new THREE.Path(roundedShape(3.3,3.2,.12).getPoints(12).reverse()));
+ add(room,new THREE.ExtrudeGeometry(frame,{depth:.1,bevelEnabled:true,bevelThickness:.05,bevelSize:.05,bevelSegments:3,curveSegments:8}),soft,2.8,3.1,-4.62);
+ const sky=document.createElement('canvas');sky.width=8;sky.height=128;{const ctx=sky.getContext('2d'),grad=ctx.createLinearGradient(0,0,0,128);grad.addColorStop(0,'#8fc0f2');grad.addColorStop(1,'#e3f1ff');ctx.fillStyle=grad;ctx.fillRect(0,0,8,128);}
+ const skyTexture=new THREE.CanvasTexture(sky);skyTexture.colorSpace=THREE.SRGBColorSpace;
+ const pane=add(home,new THREE.PlaneGeometry(3.32,3.22),new THREE.MeshBasicMaterial({map:skyTexture,toneMapped:false}),2.8,3.1,-4.6);pane.castShadow=false;
+ add(room,softBox(.09,3.25,.1,.5,.2,.5,16),soft,2.8,3.1,-4.52);add(room,softBox(3.35,.09,.1,.2,.5,.5,16),soft,2.8,3.1,-4.52);
+ add(room,softBox(4.3,.14,.5,.12,.5,.25),soft,2.8,1.2,-4.35);
+ const wave=new THREE.Shape(),wavePts=[];for(let i=0;i<=30;i++){const t=i/30;wavePts.push([t*.78-.39,Math.sin(t*Math.PI*6)*.07]);}
+ wavePts.forEach(([x,y],i)=>i?wave.lineTo(x,y):wave.moveTo(x,y));for(let i=30;i>=0;i--)wave.lineTo(wavePts[i][0],wavePts[i][1]-.05);
+ const curtainGeo=new THREE.ExtrudeGeometry(wave,{depth:4.65,bevelEnabled:true,bevelThickness:.06,bevelSize:.03,bevelSegments:2,curveSegments:4});curtainGeo.rotateX(-Math.PI/2);
+ const curtain=fabric('#ffffff','#dfeaff');for(const x of [.7,4.9])add(room,curtainGeo,curtain,x,.48,-4.15);
+ const rod=add(room,new THREE.CylinderGeometry(.035,.035,5.2,12),silver,2.8,5.25,-4.15);rod.rotation.z=Math.PI/2;
+ for(const x of [.2,5.4])add(room,new THREE.SphereGeometry(.08,14,10),silver,x,5.25,-4.15);
+ bake(room);
+ // Rug: thick rounded mat with a woven border ring.
+ const rug=new THREE.Group();home.add(rug);rug.position.set(0,-.12,1);rug.scale.z=.73;
+ add(rug,lathe([[0,0],[4.45,0],[4.52,.03],[4.46,.06],[0,.065]],96),fabric('#e1ebf8','#ffffff'));
+ const ring=add(rug,new THREE.TorusGeometry(3.95,.07,4,96),fabric('#c3d7f0'),0,.06,0);ring.rotation.x=Math.PI/2;ring.scale.z=.25;
+ bake(rug);
+ // Deep upholstered sofa: pillowy seat and back cushions, rolled arms, oak feet.
+ const sofa=new THREE.Group();home.add(sofa);
+ add(sofa,softBox(6.1,.6,2.6,.18,.35,.2),upholstery,-1,.52,-.62);
+ add(sofa,softBox(6.1,1.75,.6,.18,.25,.4),upholstery,-1,1.5,-1.72);
+ for(const x of [-2.45,.45]){add(sofa,softBox(2.78,.44,2.2,.16,.55,.16),cushion,x,1.0,-.38);add(sofa,softBox(2.72,1.18,.58,.2,.32,.6),cushion,x,1.78,-1.28).rotation.x=-.12;}
+ for(const x of [-3.86,1.86])add(sofa,softBox(.66,1.22,2.68,.55,.3,.22),upholstery,x,1.08,-.6);
+ for(const x of [-3.65,1.65])for(const z of [-1.75,.48])add(sofa,new THREE.CylinderGeometry(.075,.05,.36,14),oak,x,.06,z);
+ const pillow=add(sofa,softBox(1.0,.95,.34,.35,.35,.7),fabric('#9dc4fa','#e1eeff'),-3.15,1.68,-.95);pillow.rotation.set(-.15,.25,.22);
+ bake(sofa);
+ contactShadow(home,blob,8.4,4.4,{x:-1,y:-.1,z:-.55,opacity:.3});
+ // Clay travelers: one holds the phone, the companion leans in to look.
+ const traveler=new THREE.Group();home.add(traveler);traveler.position.set(-1.8,0,0);
+ const head=buildTraveler(traveler,{mesh},{...face,shirt,trousers},{pose:'phone',hairStyle:0});
+ const homePhone=phone(home,'/assets/sandeul-home-screen.svg');homePhone.scale.setScalar(.17);homePhone.position.set(-1.73,2.13,1.46);homePhone.rotation.set(.45,Math.PI+.08,0);
  const phoneBack=mesh(homePhone,new THREE.ShapeGeometry(roundedShape(3.03,6.22,.38)),mat('#b9d4f5',.35,.4),0,0,-.14);phoneBack.rotation.y=Math.PI;
  for(const y of [2.3,1.85]){const lens=cylinder(homePhone,.16,.16,.06,navy,.95,y,-.19);lens.rotation.x=Math.PI/2;}
-
-
- // Travel companion sits alongside and looks toward the shared phone.
- traveler.position.x=-1.8;
- homePhone.position.x=-1.73;
- const companion=traveler.clone(true);home.add(companion);companion.position.set(-.15,0,.12);
- const companionShirt=mat('#a7c9f5',0,.85);
- companion.traverse(part=>{if(part.isMesh&&part.material===shirt)part.material=companionShirt;});
- companion.rotation.y=-.28;
- companion.children[0].rotation.z=.14;
- for(const part of companion.children.slice(9))companion.remove(part);
- for(const side of [-1,1]){
-  limb(companion,[side*.47,2.35,0],[side*.58,1.7,.35],.16,companionShirt);
-  limb(companion,[side*.58,1.7,.35],[side*.32,1.43,.95],.12,skin);
-  sphere(companion,.13,skin,side*.32,1.43,.95);
- }
-
- const companionHead=companion.children.find(part=>part.isGroup&&part.position.y>3);
- if(companionHead){companionHead.position.x=-.2;companionHead.rotation.z=.2;companionHead.rotation.y=-.4;companionHead.rotation.x=.32;}
- // Replace the spare cushion so the companion occupies a clear seat.
- pillow.visible=false;
- // Packed suitcase and a small table communicate the moment before leaving home.
+ const companion=new THREE.Group();home.add(companion);companion.position.set(-.15,0,.12);companion.rotation.y=-.28;
+ const companionHead=buildTraveler(companion,{mesh},{...face,shirt:fabric('#a7c9f5','#eef5ff'),trousers:fabric('#f4f1ea'),hair:mat('#5b3f33',0,.55)},{pose:'lap',hairStyle:2,shoe:{upper:mat('#2c4a77',0,.6),sole:soft}});
+ companionHead.position.x=-.2;companionHead.rotation.set(.32,-.4,.2);
+ contactShadow(home,blob,1.3,1.1,{x:-2.15,y:-.1,z:1.85,opacity:.25});contactShadow(home,blob,1.3,1.1,{x:-.4,y:-.1,z:1.95,opacity:.25});
+ // Packed suitcase: glossy shell, zip seam, ribs, spinner wheels, telescopic handle.
  const suitcase=new THREE.Group();home.add(suitcase);suitcase.position.set(3.1,0,.25);suitcase.rotation.y=-.2;
- box(suitcase,1.45,2.05,.8,blue,0,1.18,0,.2);
- for(let i=0;i<5;i++)box(suitcase,.045,1.65,.035,mat('#73acfa'),-.48+i*.24,1.18,.41,.01);
- for(const x of [-.45,.45]){cylinder(suitcase,.11,.11,.15,navy,x,.1,.25);cylinder(suitcase,.04,.04,.9,silver,x,2.6,0);}
- box(suitcase,.95,.13,.16,navy,0,3.03,0,.05);
- cylinder(home,1.2,1.2,.16,white,1.35,1,3.4);for(const x of [.6,2.1])limb(home,[x,.95,3.4],[x+.15,.02,3.6],.06,silver);
- cylinder(home,.21,.17,.35,white,1.3,1.25,3.35);cylinder(home,.17,.17,.01,navy,1.3,1.43,3.35);
- box(home,.7,.035,.9,blue,.7,1.1,3.8,.02);
- const lamp=new THREE.Group();home.add(lamp);lamp.position.set(-4.6,0,-2.5);cylinder(lamp,.45,.45,.08,white,0,0,0);cylinder(lamp,.035,.035,3.8,silver,0,1.9,0);cylinder(lamp,.48,.82,.8,white,0,3.9,0);
+ const shell=new THREE.MeshPhysicalMaterial({color:'#3182f6',roughness:.32,metalness:.05,clearcoat:1,clearcoatRoughness:.18});
+ add(suitcase,softBox(1.45,2.05,.8,.2,.2,.42,20),shell,0,1.2,0);
+ add(suitcase,softBox(1.49,2.09,.05,.2,.2,.5,16),mat('#1f4f9e',0,.5),0,1.2,-.06);
+ const rib=new THREE.MeshPhysicalMaterial({color:'#5d9bf8',roughness:.3,clearcoat:1,clearcoatRoughness:.2});
+ for(let i=0;i<4;i++)add(suitcase,softBox(.1,1.62,.08,.5,.12,.5,10),rib,-.39+i*.26,1.2,.37);
+ for(const x of [-.52,.52])for(const z of [-.24,.24]){add(suitcase,softBox(.16,.14,.16,.4,.4,.4,10),navy,x,.15,z);const w=add(suitcase,new THREE.CylinderGeometry(.075,.075,.07,16),dark,x,.02,z);w.rotation.z=Math.PI/2;}
+ for(const x of [-.38,.38]){add(suitcase,new THREE.CylinderGeometry(.045,.045,.4,12),silver,x,2.38,-.24);add(suitcase,new THREE.CylinderGeometry(.032,.032,.5,12),silver,x,2.78,-.24);}
+ add(suitcase,softBox(.92,.13,.17,.3,.5,.5,14),navy,0,3.04,-.24);
+ add(suitcase,new THREE.TorusGeometry(.2,.045,10,20,Math.PI),navy,0,2.2,.06);
+ bake(suitcase);
+ contactShadow(home,blob,2.1,1.6,{x:3.1,y:-.1,z:.25,opacity:.32,rot:-.2});
+ // Side table with a mug of coffee and a travel guide.
+ const table=new THREE.Group();home.add(table);table.position.set(1.35,0,3.4);
+ add(table,lathe([[0,0],[1.16,0],[1.22,.04],[1.23,.1],[1.18,.15],[0,.16]],64),soft,0,.92,0);
+ for(let i=0;i<3;i++){const a=i/3*Math.PI*2+.4,c=Math.cos(a),s=Math.sin(a);add(table,tube([[c*.55,.94,s*.55],[c*.8,-.12,s*.8]],.06,{r2:.04,seg:4,radial:10}),oak);}
+ add(table,lathe([[0,0],[.15,0],[.19,.03],[.2,.33],[.17,.33],[.16,.06],[0,.06]],32),soft,-.05,1.08,-.05);
+ add(table,new THREE.CircleGeometry(.165,24),mat('#7a5640',0,.3),-.05,1.36,-.05).rotation.x=-Math.PI/2;
+ add(table,new THREE.TorusGeometry(.09,.026,8,16,Math.PI*1.2),soft,.16,1.24,-.05).rotation.z=-Math.PI*.6;
+ add(table,softBox(.66,.05,.86,.2,.5,.2,16),soft,-.62,1.1,.42).rotation.y=.3;
+ add(table,softBox(.72,.035,.92,.2,.5,.2,16),blue,-.62,1.14,.42).rotation.y=.3;
+ bake(table);
+ contactShadow(home,blob,2.9,2.9,{x:1.35,y:-.1,z:3.4,opacity:.18});
+ // Floor lamp with a glowing shade.
+ const lamp=new THREE.Group();home.add(lamp);lamp.position.set(-4.6,0,-2.5);
+ add(lamp,lathe([[0,0],[.42,0],[.46,.03],[.42,.08],[.12,.12],[0,.13]],40),soft,0,-.12,0);
+ add(lamp,new THREE.CylinderGeometry(.035,.035,3.6,12),silver,0,1.75,0);
+ add(lamp,new THREE.CylinderGeometry(.48,.82,.8,48,1,true),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.7,emissive:'#fff0d6',emissiveIntensity:.35,side:THREE.DoubleSide}),0,3.9,0);
+ add(lamp,new THREE.SphereGeometry(.16,16,12),new THREE.MeshBasicMaterial({color:'#fff6e6',toneMapped:false}),0,3.7,0);
+ bake(lamp);
+ contactShadow(home,blob,1.3,1.3,{x:-4.6,y:-.1,z:-2.5,opacity:.22});
  function updateFlight(progress,mobile=false){
   flightMode=true;flightProgress=progress;lastMobile=mobile;
   const p=smooth(clamp(progress));groups.forEach(g=>g.visible=false);skyClouds.visible=false;home.visible=true;
