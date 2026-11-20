@@ -4,7 +4,6 @@ import { FlightScroll } from "../src/styles/flight";
 import ProductStorySection from "./product-story";
 import { SiteFooter } from "../src/styles/footer";
 import { Toast } from "../src/styles/toast";
-import DataAndAISections from "./data-and-ai-sections";
 import Ending from "./landing-ending";
 import LandingRuntime from "./landing-runtime";
 
@@ -18,7 +17,6 @@ export default function HomePage() {
 <FlightScroll className="flight-scroll" aria-label="집에서 함께 산들 앱으로 여행을 준비하는 두 사람"><div className="showcase flight-stage"><div id="scene" aria-hidden="true"></div></div></FlightScroll>
 
 <ProductStorySection />
-<DataAndAISections />
 </main>
 <Ending>
 <SiteFooter>

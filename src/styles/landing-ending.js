@@ -1,28 +1,34 @@
 'use client';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { landingTitle } from './hero';
-
-const routeDrift = keyframes`
- from {transform:translateX(-1.5%) rotate(-8deg)} to {transform:translateX(1.5%) rotate(-5deg)}
-`;
+import { skyCard, skyCardWide, cardStripRadius, cardTextInset, cardTitle, cardText, sectionFrame } from './feature-card';
 
 export const LandingEnding = styled.div`
-  position:relative; isolation:isolate; overflow:hidden; background:linear-gradient(#eaf4fb,#f8fbfd 70%,white);
-  .closing-panel {position:relative; isolation:isolate; overflow:hidden; text-align:center; padding:clamp(70px,8vw,120px) 20px 64px;}
-  .closing-panel::before {content:''; position:absolute; z-index:-1; inset:-35%;
-    background:repeating-radial-gradient(ellipse at 80% 130%,transparent 0 54px,#86b1ce3d 55px,transparent 57px 98px);
-    mask-image:linear-gradient(90deg,#000,transparent 48%,#000);}
-  @media(prefers-reduced-motion:no-preference){.closing-panel::before{animation:${routeDrift} 10s ease-in-out infinite alternate}}
-  .closing-app-icon {display:grid;place-items:center;width:60px;height:60px;border-radius:16px;background:white;margin:0 auto 20px;box-shadow:0 4px 20px #40607814}
-  h2 { ${landingTitle} font-size:clamp(44px,6.4vw,88px);line-height:1.12;margin:0;}
-  .closing-content > p {color:#4b6072;font-size:17px;margin:18px 0 28px}
+  position:relative; background:white;
+  /* Closing: one wide sky card with the feature-intro title voice. */
+  .closing-panel { ${sectionFrame} padding-bottom:0; text-align:center; }
+  .closing-content { ${skyCardWide} border-radius:32px; padding:clamp(64px,8vw,112px) 24px; }
+  .closing-app-icon {display:grid;place-items:center;width:60px;height:60px;border-radius:16px;background:white;margin:0 auto 22px;box-shadow:0 1px 2px #1d3a500d,0 8px 24px #1d3a500f}
+  h2 { ${landingTitle} font-size:clamp(32px,4.6vw,60px); line-height:1.2; margin:0; }
+  .closing-content > p { color:#3d4754; font-size:clamp(17px,1.35vw,21px); font-weight:500; letter-spacing:-.02em; margin:clamp(14px,1.4vw,22px) 0 28px; }
   .store-picker {width:fit-content;margin:auto}
-  .airport-directory {display:grid;grid-template-columns:repeat(4,1fr);padding:20px 0 36px;gap:16px;border-bottom:1px solid #d7e4ed}
-  .airport-directory p {grid-column:1/-1;margin:0;color:#526b7e;font-size:14px}
-  .airport-directory div {display:grid;gap:3px}
-  .airport-directory b {font-size:clamp(30px,4vw,60px);line-height:1.08;color:#274256;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-  .airport-directory span {color:#4b6172;font-size:14px}
-  @media(max-width:600px){.airport-directory{grid-template-columns:repeat(2,1fr)}}
+  /* Supported airports: the feature grid's card strip, one card per airport. */
+  .airport-directory { ${sectionFrame} padding-top:clamp(72px,8vw,120px); padding-bottom:clamp(56px,6vw,88px); border-bottom:1px solid #e3ebf1; }
+  .airport-directory > p { margin:0 0 clamp(28px,3vw,44px); text-align:center; color:#3d4754; font-size:clamp(17px,1.35vw,21px); font-weight:500; letter-spacing:-.02em; }
+  .airport-directory ul { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); ${cardStripRadius('.airport-visual')} }
+  .airport-directory li { min-width:0; }
+  .airport-visual { ${skyCard} display:grid; place-items:end center; height:clamp(170px,15vw,220px); padding:0 12px; }
+  .airport-illustration { display:block; width:min(100%,250px); height:auto; }
+  .airport-directory b, .airport-directory span { display:block; ${cardTextInset} }
+  .airport-directory b { ${cardTitle} margin-top:18px; color:#191f28; font-variant-numeric:tabular-nums; }
+  .airport-directory span { ${cardText} margin-top:2px; }
+  @media(max-width:800px){
+    .closing-content { border-radius:24px; }
+    .airport-directory ul { grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px 12px; }
+    .airport-visual { border-radius:24px; height:130px; padding:0 6px; }
+    .airport-directory b, .airport-directory span { margin-inline:0; }
+    .airport-directory b { margin-top:12px; }
+  }
   summary {
     display: flex;
     align-items: center;

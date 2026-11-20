@@ -1,25 +1,36 @@
 "use client";
 import styled from 'styled-components';
-import { landingTitle, sectionTitleSize } from './hero';
+import { skyCard, cardStripRadius, cardTextInset, cardTitle, cardText, cardPill, cardPanel, sectionFrame } from './feature-card';
 export const ProductStory = styled.div`
  color:#191b20;
- .push-summary { box-sizing:border-box; max-width:1320px; margin:auto; padding:0 clamp(20px,4vw,60px) clamp(72px,9vw,144px);
-   display:grid; grid-template-columns:.9fr 1.1fr; align-items:center; gap:clamp(32px,5vw,90px); scroll-margin-top:80px; }
- .ticket-copy h2 { ${landingTitle} ${sectionTitleSize} margin:12px 0 16px; }
- .ticket-copy p { font-size:16px; line-height:1.65; margin:0; color:#4d5b67; word-break:keep-all; }
- .ticket-copy p:first-child { font-size:15px; font-weight:650; color:#39739a; }
- .reminder-options { display:flex; flex-wrap:wrap; gap:6px; margin-top:28px; }
- .reminder-preview { border-radius:32px; background:#e8f1f7; padding:clamp(36px,5vw,80px) 18px; display:grid; justify-items:center; }
- .boarding-pass { box-sizing:border-box; width:min(91%,365px); background:white; border-radius:20px; padding:22px 24px 38px; color:#1e3547; box-shadow:0 1px 2px #1d3a500d,0 8px 24px #1d3a500f; }
+ /* Second card row under the feature grid: ticket reminder | AI demo, same strip as the feature cards. */
+ .companion-grid { ${sectionFrame} display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:auto auto 1fr; ${cardStripRadius('.card-visual')} }
+ .companion-grid > * { display:grid; grid-row:span 3; grid-template-rows:subgrid; min-width:0; scroll-margin-top:80px; }
+ .card-visual { ${skyCard} min-height:clamp(350px,31vw,430px); display:grid; place-items:center; padding:clamp(56px,5vw,72px) 18px clamp(36px,4vw,56px); }
+ .companion-grid > :last-child .card-visual { box-shadow:inset 1px 0 #ffffff99; }
+ .card-label { position:absolute; top:18px; left:18px; ${cardPill} font-weight:600; }
+ .push-summary > header, .push-summary > .reminder-options { ${cardTextInset} }
+ .ticket-copy h2, .ai-copy h2 { ${cardTitle} margin:22px 0 8px; font-size:clamp(21px,2vw,28px); color:#191f28; }
+ .ticket-copy p { ${cardText} margin:0; }
+ .reminder-options { display:flex; flex-wrap:wrap; align-content:start; gap:6px; margin-top:16px; }
+ .reminder-preview { display:grid; justify-items:center; width:100%; }
+ .boarding-pass { box-sizing:border-box; width:min(91%,365px); ${cardPanel} padding:22px 24px 38px; }
  .pass-top,.pass-bottom,.pass-route { display:flex; align-items:center; justify-content:space-between; }
  .pass-top,.pass-bottom { font-size:14px; }
  .pass-route { gap:12px; margin:24px 0; }
- .pass-route span { font-size:clamp(34px,4vw,52px); font-weight:700; letter-spacing:-.045em; line-height:1; }
+ .pass-route span { font-size:clamp(34px,4vw,52px); font-weight:700; letter-spacing:-.04em; line-height:1; }
  .pass-route small { display:block; font-size:14px; letter-spacing:0; font-weight:500; color:#637585; margin-top:7px; }
  .pass-route i { flex:1; text-align:center; color:#6098bd; font-style:normal; background:linear-gradient(#d4e3ed,#d4e3ed) center / 100% 1px no-repeat; }
  .pass-bottom { border-top:1px dashed #cad7df; padding-top:14px; font-variant-numeric:tabular-nums; }
  .reminder-preview .push-message { position:relative; margin-top:-16px; }
- @media(max-width:800px){.push-summary{grid-template-columns:1fr;gap:26px}.reminder-preview{border-radius:24px}}
+ @media(max-width:800px){
+   .companion-grid { grid-template-columns:1fr; grid-template-rows:none; gap:40px; }
+   .companion-grid > * { display:block; grid-row:auto; }
+   .card-visual { border-radius:24px; min-height:340px; padding:68px 16px 32px; }
+   .companion-grid > :last-child .card-visual { box-shadow:none; }
+   .push-summary > header, .push-summary > .reminder-options { margin-inline:0; }
+   .ticket-copy h2, .ai-copy h2 { font-size:21px; margin-top:18px; }
+ }
   @keyframes notification-in {from{opacity:0; transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
   @media(prefers-reduced-motion:no-preference){.push-message{transform-origin:50% 0; animation:notification-in .28s var(--ease-out)}}
   .push-message {

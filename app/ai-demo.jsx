@@ -31,15 +31,23 @@ export default function AIDemo() {
     locked.current = true; setUsed(true); setQuestion(text); setInput(''); setBusy(true);
     timer.current = setTimeout(() => { setResult(answer(text)); setBusy(false); }, 650);
   }
+  const disclosure = <p className="demo-disclosure">{used ? '이번 체험을 사용했어요.' : '한 번 체험할 수 있어요.'} 예시 데이터로 답변해요.</p>;
   return <div className="ai-showcase" id="ai-preview">
-    <div className="ai-copy"><p className="eyebrow">AI에서 사용하기</p><h2 id="ai-title">공항 정보, AI에게 물어보세요.</h2><p>산들 MCP를 연결하면 쓰던 AI에서 항공편과 혼잡도, 주차 정보를 물어볼 수 있어요.</p>
-      <form className="demo-form" onSubmit={event => { event.preventDefault(); submit(input); }}><label className="sr-only" htmlFor="airport-question">공항 정보 질문</label><input id="airport-question" value={input} maxLength={300} onChange={event => setInput(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && event.nativeEvent.isComposing) event.preventDefault(); }} placeholder="김해에서 제주까지 얼마나 걸려?" disabled={used} /><button type="submit" aria-label="질문 보내기" disabled={used || !input.trim()}>↑</button></form>
-      <div className="demo-examples">{examples.map((text, index) => <button key={text} className="chip" disabled={used} onClick={() => submit(text)} type="button">{['비행시간', '공항 혼잡도', '주차 안내'][index]}</button>)}</div>
-      <p className="demo-disclosure">{used ? '이번 체험을 사용했어요.' : '한 번 체험할 수 있어요.'} 예시 데이터로 답변해요.</p><button className="demo-connect mcp-connect" type="button">MCP 연결 안내 ↗</button>
+    <div className="card-visual">
+      <span className="card-label">AI에서 사용하기</span>
+      <div className="chat-window">
+        <div className="chat-header"><span><img src="/brand/symbol.svg" alt="" width="20" height="20" />산들 AI</span><span>미리보기</span></div>
+        {question ? <div className="demo-conversation ai-preview" aria-live="polite" aria-atomic="true" aria-busy={busy}>
+          <div className="chat-question">{question}</div>{busy ? <p className="demo-loading">응답 예시를 준비하고 있어요…</p> : result && <div className="demo-answer"><p>{result.text}</p>{result.keys.map(key => <div className="demo-result" key={key}><strong>{cards[key].title}</strong><dl>{cards[key].rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></div>)}</div>}
+        </div> : disclosure}
+        <form className="demo-form" onSubmit={event => { event.preventDefault(); submit(input); }}><label className="sr-only" htmlFor="airport-question">공항 정보 질문</label><input id="airport-question" value={input} maxLength={300} onChange={event => setInput(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && event.nativeEvent.isComposing) event.preventDefault(); }} placeholder="김해에서 제주까지 얼마나 걸려?" disabled={used} /><button type="submit" aria-label="질문 보내기" disabled={used || !input.trim()}>↑</button></form>
+        {question && disclosure}
+      </div>
     </div>
-    {question && <div className="ai-preview"><div className="chat-window"><div className="chat-header"><span><img src="/brand/symbol.svg" alt="" width="20" height="20" />산들 AI</span><span>미리보기</span></div>
-      <div className="demo-conversation" aria-live="polite" aria-atomic="true" aria-busy={busy}>
-        <div className="chat-question">{question}</div>{busy ? <p className="demo-loading">응답 예시를 준비하고 있어요…</p> : result && <div className="demo-answer"><p>{result.text}</p>{result.keys.map(key => <div className="demo-result" key={key}><strong>{cards[key].title}</strong><dl>{cards[key].rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></div>)}</div>}
-      </div></div></div>}
+    <div className="ai-copy"><h2 id="ai-title">공항 정보, AI에게 물어보세요.</h2><p>산들 MCP를 연결하면 쓰던 AI에서 항공편과 혼잡도, 주차 정보를 물어볼 수 있어요.</p></div>
+    <div className="demo-actions">
+      <div className="demo-examples">{examples.map((text, index) => <button key={text} className="chip" disabled={used} onClick={() => submit(text)} type="button">{['비행시간', '공항 혼잡도', '주차 안내'][index]}</button>)}</div>
+      <button className="demo-connect mcp-connect" type="button">MCP 연결 안내 <span aria-hidden="true">↗</span></button>
+    </div>
   </div>;
 }

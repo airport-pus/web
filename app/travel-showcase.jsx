@@ -1,6 +1,7 @@
 'use client';
 import styled from 'styled-components';
 import { landingTitle, sectionTitleSize } from '../src/styles/hero';
+import { skyCard, cardStripRadius, cardTextInset, cardTitle, cardText, cardPill, sectionFrame } from '../src/styles/feature-card';
 import { useEffect, useRef, useState } from 'react';
 
 const features = [
@@ -51,7 +52,7 @@ export default function TravelShowcase() {
 
  </Showcase>}
 const Showcase=styled.section`
- max-width:1320px; margin:0 auto; padding:0 clamp(20px,4vw,60px) clamp(88px,11vw,170px); scroll-margin-top:60px;
+ ${sectionFrame} scroll-margin-top:60px;
  .feature-intro {
    --title-offset:clamp(28px,3vw,52px);
    padding:calc(clamp(92px,8vw,152px) + var(--title-offset)) 0 clamp(40px,4vw,64px);
@@ -73,20 +74,19 @@ const Showcase=styled.section`
  .feature-intro h2 img { width:1em; height:1em; vertical-align:-.12em; }
  .feature-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
  article { min-width:0; }
- .feature-visual { position:relative; isolation:isolate; overflow:hidden; height:clamp(350px,31vw,430px); background:#d3e8fa url('/assets/feature-sky.webp') center/cover; }
- article:first-child .feature-visual { border-radius:32px 0 0 32px; }
- article:last-child .feature-visual { border-radius:0 32px 32px 0; }
+ .feature-visual { ${skyCard} height:clamp(350px,31vw,430px); }
+ .feature-grid { ${cardStripRadius('.feature-visual')} }
  .feature-model,.scene-fallback { position:absolute; inset:0; width:100%; height:100%; }
  .scene-fallback { object-fit:cover; }
  .feature-model canvas { display:block; width:100%; height:100%; }
  .feature-visual:has(canvas) .scene-fallback { display:none; }
- .scene-reading { position:absolute; bottom:18px; left:50%; transform:translateX(-50%); padding:6px 14px; border-radius:24px; white-space:nowrap; background:#ffffffeb; color:#2d4558; font-size:14px; font-variant-numeric:tabular-nums; box-shadow:0 2px 10px #1d3a5014; pointer-events:none; }
+ .scene-reading { position:absolute; bottom:18px; left:50%; transform:translateX(-50%); ${cardPill} pointer-events:none; }
  .scene-reading b { margin-left:5px; }
 
 
- article h3, article > p, .demo-choices, .replay-search { margin-inline:clamp(12px,1.5vw,24px); }
- article h3 { margin-block:22px 8px; font-size:clamp(19px,1.65vw,23px); line-height:1.4; letter-spacing:-.03em; font-weight:650; }
- article > p { margin-block:0; max-width:34em; font-size:15px; line-height:1.7; color:#4d5b67; text-wrap:pretty; }
+ article h3, article > p, .demo-choices, .replay-search { ${cardTextInset} }
+ article h3 { margin-block:22px 8px; ${cardTitle} }
+ article > p { margin-block:0; ${cardText} }
  .demo-choices { display:flex; flex-wrap:wrap; gap:6px; margin-top:16px; }
  .replay-search { margin-top:16px; }
  .replay-search span { display:inline-block; transition:transform .3s var(--ease-out); }

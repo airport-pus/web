@@ -1,5 +1,6 @@
 import { LandingEnding } from '../src/styles/landing-ending';
 import { storeLinks } from '../src/store-links';
+import AirportIllustration from './airport-illustration';
 
 export default function Ending({ children }) {
   return (
@@ -25,12 +26,15 @@ export default function Ending({ children }) {
         </details>
       </div>
       </section>
-      <div className="airport-directory section-shell"><p>현재 국내 4개 공항을 지원합니다</p>
-        {[
-          ['PUS','김해국제공항'], ['ICN','인천국제공항'],
-          ['GMP','김포국제공항'], ['CJU','제주국제공항'],
-        ].map(([code,name]) => <div key={code}><b>{code}</b><span>{name}</span></div>)}
-      </div>
+      <section className="airport-directory" aria-labelledby="airport-directory-title">
+        <p id="airport-directory-title">현재 국내 4개 공항을 지원합니다</p>
+        <ul>
+          {[
+            ['PUS','김해국제공항'], ['ICN','인천국제공항'],
+            ['GMP','김포국제공항'], ['CJU','제주국제공항'],
+          ].map(([code,name]) => <li key={code}><div className="airport-visual"><AirportIllustration code={code} /></div><b>{code}</b><span>{name}</span></li>)}
+        </ul>
+      </section>
       {children}
     </LandingEnding>
   );
