@@ -24,7 +24,7 @@ export default function TicketReminder() {
       </header>
       <div className="reminder-options" role="group" aria-label="출발 전 알림 시간 미리보기">
         {reminders.map(option => (
-          <button key={option.minutes} type="button" aria-pressed={selected === option}
+          <button key={option.minutes} type="button" className="chip" aria-pressed={selected === option}
             onClick={() => select(option)}>{option.label} 전</button>
         ))}
       </div>
