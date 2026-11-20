@@ -186,14 +186,15 @@ function build(host){
    lights.push(lamp);
    const signal = mesh(root,softBox(.26,.07,.03,.4,.5,.5,16),lamp,x,1.7,-1.64);
    signal.castShadow = false;
-   for (let row = 0; row < count; row++) {
+   // One extra traveler per lane: it walks through the gate, then re-enters at the back.
+   for (let row = 0; row <= count; row++) {
     const person = new THREE.Group();
     root.add(person);
     person.position.x = x;
     const z = 0, i = lane * 2 + row;
     const shirt = shirts[(row+lane)%shirts.length], skin = skins[i%skins.length], hair = hairs[(i+1)%hairs.length], trousers = pants[(row+2*lane)%pants.length];
     const shoes = [-.085,.085].map(dx => shoe(person, dx, i%2 ? navy : white));
-    travelers.push({person,row,lane,shoes});
+    travelers.push({person,row,lane,shoes,count});
     // Body built facing +z, then turned to face the gate (-z).
     const fig = new THREE.Group(); fig.rotation.y = Math.PI;
     const f = (geo,m,a=0,b=0,c=0) => mesh(fig,geo,m,a,b,c);
@@ -219,23 +220,32 @@ function build(host){
    }
   });
   bake(gates);
+  let clock = 0, prevTime = null;
   animate = time => {
    const selected = Number(host.dataset.zone ?? 1);
    lights.forEach((lamp,lane) => {
     lamp.emissive.copy(lamp.color);
     lamp.emissiveIntensity = lane === selected ? .85 : .08;
    });
-   for(const {person,row,lane,shoes} of travelers){
-    const cycle = (time + (lane === selected ? 0 : 3) + (6-row)*.32) % 9;
-    const stride = THREE.MathUtils.smoothstep(cycle, 1, 3.4);
-    const settle = THREE.MathUtils.smoothstep(cycle, 5, 8.6);
-    const shift = stride - settle;
-    person.position.z = -.85 + row * .85 - .44 * shift;
-    const step = Math.sin(stride * Math.PI * 4) - Math.sin(settle * Math.PI * 4);
+   // Monotonic clock: replays and resizes never rewind the queue.
+   const dt = prevTime === null ? 0 : time - prevTime; prevTime = time;
+   if (dt > 0 && dt < .1) clock += dt;
+   for(const {person,row,lane,shoes,count} of travelers){
+    const n = count + 1, phase = (clock + lane * 1.3) / 4.5, k = Math.floor(phase);
+    const f = THREE.MathUtils.smoothstep(phase - k, .6, 1);
+    // Queue place: 0 is the front; it steps through the gate (-1) while the
+    // rest step forward and the recycled traveler walks in at the back.
+    const place = ((row - k) % n + n) % n, pos = place - f;
+    person.position.z = pos >= 0 ? -.85 + pos * .85 : -.85 + pos * 1.9;
+    const scale = place === 0 ? THREE.MathUtils.smoothstep(pos, -1, -.72)
+     : place === n - 1 ? THREE.MathUtils.smoothstep(n - 1 - pos, 0, .7) : 1;
+    person.scale.setScalar(Math.max(.001, scale));
+    person.visible = scale > .001;
+    const step = Math.sin(f * Math.PI * 4);
     shoes[0].position.z = -.035 + .085 * step;
     shoes[1].position.z = -.035 - .085 * step;
     person.position.y = .024 * Math.abs(step);
-    person.rotation.y = .12 * Math.sin(cycle / 9 * Math.PI * 2);
+    person.rotation.y = .05 * Math.sin(phase * Math.PI);
    }
   };
  }else{
@@ -264,21 +274,36 @@ function build(host){
 
   }
   const arriving = car(arrivingPaint);
+  // Enter from the right, drive nose-first into the slot, then reverse out
+  // along the same curve and drive off forward to the left.
   const path = new THREE.CurvePath();
-  path.add(new THREE.LineCurve3(new THREE.Vector3(10,0,0), new THREE.Vector3(2.5,0,0)));
+  path.add(new THREE.LineCurve3(new THREE.Vector3(13,0,0), new THREE.Vector3(2.5,0,0)));
   path.add(new THREE.CubicBezierCurve3(
    new THREE.Vector3(2.5,0,0), new THREE.Vector3(1.5,0,0),
    new THREE.Vector3(1,0,.9), new THREE.Vector3(1,0,1.5)
   ));
   path.add(new THREE.LineCurve3(new THREE.Vector3(1,0,1.5), new THREE.Vector3(1,0,2.7)));
-
+  const laneU = path.getCurveLengths()[0] / path.getLength();
+  const exitFrom = new THREE.Vector3(2.5,0,0), exitTo = new THREE.Vector3(-13,0,0);
+  const heading = v => Math.atan2(v.x, v.z);
   animate = time => {
-   const cycle = time % 18;
-   const progress = THREE.MathUtils.smoothstep(cycle,0,5.5)
-    - THREE.MathUtils.smoothstep(cycle,11,17.5);
-   const direction = path.getTangentAt(progress);
-   arriving.position.copy(path.getPointAt(progress));
-   arriving.rotation.y = Math.atan2(direction.x,direction.z);
+   const cycle = time % 20, ss = THREE.MathUtils.smoothstep;
+   let progress = 1;
+   if (cycle < 11) {
+    progress = ss(cycle, 0, 5.5);
+    arriving.position.copy(path.getPointAt(progress));
+    arriving.rotation.y = heading(path.getTangentAt(progress));
+   } else if (cycle < 14) {
+    // Reverse: moves backward along the curve while still facing its tangent.
+    const u = THREE.MathUtils.lerp(1, laneU, ss(cycle, 11, 13.6));
+    progress = u;
+    arriving.position.copy(path.getPointAt(u));
+    arriving.rotation.y = heading(path.getTangentAt(u));
+   } else {
+    progress = 0;
+    arriving.position.lerpVectors(exitFrom, exitTo, ss(cycle, 14, 19.5));
+    arriving.rotation.y = -Math.PI / 2;
+   }
    host.classList.toggle('parked', progress === 1);
   };
  }
