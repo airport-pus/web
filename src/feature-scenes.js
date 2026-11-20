@@ -3,31 +3,58 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-export function mountFeatureScenes(container = document){
+export function mountFeatureScenes(container = document, onUnavailable = () => {}){
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const cleanups=[];
  container.querySelectorAll('[data-feature-scene]').forEach(host=>{
   let engine,visible=false,raf=0,last=0,elapsed=0;
+  let unavailable = false, manualReplay = false;
+  function fail() {
+   if (unavailable) return;
+   unavailable = true;
+   cancelAnimationFrame(raf);
+   host.removeAttribute('data-ready');
+   onUnavailable(host.dataset.featureScene);
+  }
+  host.addEventListener('webglcontextlost', fail, true);
   const card=host.closest('[data-story-card]');
   const isActive=()=>visible&&!document.hidden&&(!card||card.getAttribute('aria-hidden')==='false');
   function sync(){
+   if (unavailable) return;
    const active=isActive();
    host.classList.toggle('scene-active',active);
    if(!active){cancelAnimationFrame(raf);raf=0;last=0;return;}
-   if(!engine){try{engine=build(host);}catch(error){host.classList.add('scene-unavailable');console.error(error);return;}}
+   if(!engine){try{engine=build(host);}catch(error){fail();console.error(error);return;}}
    if(!raf)raf=requestAnimationFrame(tick);
   }
-  function tick(now){raf=0;if(!isActive()){sync();return;}elapsed+=last?Math.min((now-last)/1000,.05):0;last=now;engine.render(reduced.matches && host.dataset.featureScene !== "crowd" ? 8 : reduced.matches ? 0 : elapsed);if(!reduced.matches)raf=requestAnimationFrame(tick);}
+  function tick(now) {
+   raf = 0;
+   if (unavailable || !isActive()) return;
+   if (last) elapsed += (now - last) / 1000;
+   last = now;
+   if (elapsed >= 6) manualReplay = false;
+   const moving = !reduced.matches || container.dataset?.allowMotion === 'true' || manualReplay;
+   const still = host.dataset.featureScene === 'crowd' ? 0 : 5;
+   engine.render(moving ? elapsed : still);
+   if (moving) raf = requestAnimationFrame(tick);
+  }
   const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();},{rootMargin:'0px'});observer.observe(host);
   function replay(){
-   elapsed=0;last=0;sync();
+   manualReplay=true;elapsed=0;last=0;sync();
   }
+  function changeMotion() {
+   manualReplay=false;elapsed=0;last=0;sync();
+  }
+  container.addEventListener('feature-motion-change',changeMotion);
   host.addEventListener('replay-scene',replay);
   document.addEventListener('visibilitychange',sync);
   document.addEventListener('feature-activate',sync);
   reduced.addEventListener('change',sync);
   cleanups.push(()=>{
+   host.removeEventListener('webglcontextlost', fail, true);
+   host.removeAttribute('data-ready');
    visible=false;observer.disconnect();cancelAnimationFrame(raf);
+   container.removeEventListener('feature-motion-change',changeMotion);
    host.removeEventListener('replay-scene',replay);
    document.removeEventListener('visibilitychange',sync);
    document.removeEventListener('feature-activate',sync);
@@ -104,6 +131,7 @@ function build(host){
   const revealStart=typingStart+query.length*letterInterval+.18;
   let lastCount=-1;
   animate=time=>{
+   time %= 6;
    const reveal=THREE.MathUtils.smootherstep(time,revealStart,revealStart+.35);
    result.visible=reveal>0;
    resultMaterial.opacity=reveal;
@@ -259,6 +287,7 @@ function build(host){
   camera.lookAt(target);
   animate(time);
   renderer.render(scene,camera);
+  if (!renderer.getContext().isContextLost()) host.setAttribute('data-ready','');
  }
  const observer=new ResizeObserver(()=>{renderer.setSize(host.clientWidth,host.clientHeight,false);render(lastFrame);});observer.observe(host);
  renderer.setSize(host.clientWidth,host.clientHeight,false);render(0);return {render,dispose(){observer.disconnect();disposeScene(scene,renderer,environmentTarget);}};
