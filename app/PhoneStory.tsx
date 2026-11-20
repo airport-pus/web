@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import PhoneMockup from './phone-mockup';
+import PhoneMockup from './PhoneMockup';
 
-const steps = [
+const steps: {label: string; screenSrc?: string}[] = [
   { label: '운항정보' },
   { label: '공항 혼잡도' },
   { label: '주차 현황' },
@@ -66,17 +66,17 @@ const Story = styled.section`
 `;
 
 export default function PhoneStory() {
-  const story = useRef(null);
-  const stage = useRef(null);
+  const story = useRef<HTMLElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
   function scrollRange() {
-    return story.current.offsetHeight - stage.current.offsetHeight;
+    return story.current!.offsetHeight - stage.current!.offsetHeight;
   }
 
   useEffect(() => {
     function syncStep() {
-      const offset = stage.current.offsetTop;
+      const offset = stage.current!.offsetTop;
       const index = Math.round(offset / scrollRange() * (steps.length - 1));
       setActive(Math.max(0, Math.min(steps.length - 1, index)));
     }
@@ -89,9 +89,9 @@ export default function PhoneStory() {
     };
   }, []);
 
-  function selectStep(index) {
-    const start = window.scrollY + story.current.getBoundingClientRect().top
-      - parseFloat(getComputedStyle(stage.current).top);
+  function selectStep(index: number) {
+    const start = window.scrollY + story.current!.getBoundingClientRect().top
+      - parseFloat(getComputedStyle(stage.current!).top);
     window.scrollTo({ top: start + scrollRange() * index / (steps.length - 1), behavior: 'instant' });
     setActive(index);
   }

@@ -2,8 +2,8 @@ import { chromium } from '@playwright/test';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-// Capture the original checkout with "record", then run "compare" after migration.
-// Keep the evidence directory outside the repository. No application data is changed.
+// 이전 버전에서 record로 기준값을 저장하고 변경 후 compare로 비교한다.
+// 비교 결과는 저장소 밖의 디렉터리에 보관한다.
 const [mode, directory, baseURL = 'http://127.0.0.1:5174'] = process.argv.slice(2);
 if (!['record', 'compare'].includes(mode) || !directory) {
   throw new Error('Usage: node scripts/compare-styles.mjs record|compare /absolute/evidence/path [URL]');

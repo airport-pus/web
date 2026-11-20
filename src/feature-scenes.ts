@@ -1,21 +1,21 @@
-import {disposeScene} from './dispose-scene.js';
+import {disposeScene} from './dispose-scene';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-import { softBox, lathe, tube, bake, blobTexture, contactShadow, cuteHead, sneaker, mitten, toyCar } from './toy-kit.js';
+import { softBox, lathe, tube, bake, blobTexture, contactShadow, cuteHead, sneaker, mitten, toyCar } from './toy-kit';
 
-export function mountFeatureScenes(container = document, onUnavailable = () => {}){
- const cleanups=[];
- container.querySelectorAll('[data-feature-scene]').forEach(host=>{
-  let engine,visible=false,raf=0,last=0,elapsed=0;
+export function mountFeatureScenes(container: Document | HTMLElement = document, onUnavailable: (kind: string) => void = () => {}){
+ const cleanups: (() => void)[]=[];
+ container.querySelectorAll<HTMLElement>('[data-feature-scene]').forEach(host=>{
+  let engine: ReturnType<typeof build> | undefined,visible=false,raf=0,last=0,elapsed=0;
   let unavailable = false;
   function fail() {
    if (unavailable) return;
    unavailable = true;
    cancelAnimationFrame(raf);
    host.removeAttribute('data-ready');
-   onUnavailable(host.dataset.featureScene);
+   onUnavailable(host.dataset.featureScene!);
   }
   host.addEventListener('webglcontextlost', fail, true);
   const card=host.closest('[data-story-card]');
@@ -28,12 +28,12 @@ export function mountFeatureScenes(container = document, onUnavailable = () => {
    if(!engine){try{engine=build(host);}catch(error){fail();console.error(error);return;}}
    if(!raf)raf=requestAnimationFrame(tick);
   }
-  function tick(now) {
+  function tick(now: number) {
    raf = 0;
    if (unavailable || !isActive()) return;
    if (last) elapsed += (now - last) / 1000;
    last = now;
-   engine.render(elapsed);
+   engine?.render(elapsed);
    raf = requestAnimationFrame(tick);
   }
   const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();},{rootMargin:'0px'});observer.observe(host);
@@ -55,21 +55,23 @@ export function mountFeatureScenes(container = document, onUnavailable = () => {
  });
  return ()=>cleanups.forEach(dispose=>dispose());
 }
-function build(host){
- const kind=host.dataset.featureScene,scene=new THREE.Scene();
+function build(host: HTMLElement){
+ const kind = host.dataset.featureScene;
+ if (kind !== "flight" && kind !== "crowd" && kind !== "parking") throw new Error("Unknown feature scene");
+ const scene = new THREE.Scene();
  const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio, 1.5), 2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1;host.appendChild(renderer.domElement);
  const camera=new THREE.PerspectiveCamera(35,1,.1,100);
  const pmrem=new THREE.PMREMGenerator(renderer),room=new RoomEnvironment();
  const environmentTarget=pmrem.fromScene(room,.04);scene.environment=environmentTarget.texture;scene.environmentIntensity=.55;room.dispose();pmrem.dispose();
  scene.add(new THREE.HemisphereLight(0xffffff,0xb5cbe7,2));const sun=new THREE.DirectionalLight(0xffffff,3);sun.position.set(6,12,9);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14});sun.shadow.normalBias=.03;sun.shadow.radius=4;scene.add(sun);
- const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.4,metalness:.06});const physical=c=>new THREE.MeshPhysicalMaterial({color:c,roughness:.35,metalness:.05,clearcoat:1,clearcoatRoughness:.2});const white=mat('#ffffff'),blue=mat('#3182f6'),navy=mat('#233e62'),silver=mat('#afc3de'),glass=mat('#83b4e7');
+ const mat=(c: THREE.ColorRepresentation) =>new THREE.MeshStandardMaterial({color:c,roughness:.4,metalness:.06});const physical=(c: THREE.ColorRepresentation) =>new THREE.MeshPhysicalMaterial({color:c,roughness:.35,metalness:.05,clearcoat:1,clearcoatRoughness:.2});const white=mat('#ffffff'),blue=mat('#3182f6'),navy=mat('#233e62'),silver=mat('#afc3de'),glass=mat('#83b4e7');
  const root=new THREE.Group();scene.add(root);
- function mesh(g,geo,m,x=0,y=0,z=0){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o;}
- function box(g,w,h,d,m,x=0,y=0,z=0,r=.06){return mesh(g,new RoundedBoxGeometry(w,h,d,3,Math.min(r,w/4,h/4,d/4)),m,x,y,z);}
- function ball(g,r,m,x,y,z){return mesh(g,new THREE.SphereGeometry(r,24,16),m,x,y,z);}
- function cyl(g,r,h,m,x,y,z){return mesh(g,new THREE.CylinderGeometry(r,r,h,24),m,x,y,z);}
+ function mesh(g: THREE.Object3D,geo: THREE.BufferGeometry,m: THREE.Material,x=0,y=0,z=0){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o;}
+ function box(g: THREE.Object3D,w: number,h: number,d: number,m: THREE.Material,x=0,y=0,z=0,r=.06){return mesh(g,new RoundedBoxGeometry(w,h,d,3,Math.min(r,w/4,h/4,d/4)),m,x,y,z);}
+ function ball(g: THREE.Object3D,r: number,m: THREE.Material,x: number,y: number,z: number){return mesh(g,new THREE.SphereGeometry(r,24,16),m,x,y,z);}
+ function cyl(g: THREE.Object3D,r: number,h: number,m: THREE.Material,x: number,y: number,z: number){return mesh(g,new THREE.CylinderGeometry(r,r,h,24),m,x,y,z);}
  const shadow=mesh(scene,new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:kind === "flight" ? .018 : .1}),0,-.25,0);shadow.rotation.x=-Math.PI/2;shadow.castShadow=false;shadow.visible=kind!=="flight";
- // The floor extends beyond the frame so the two locations have no display base.
+ // 바닥을 화면 밖까지 연장해 받침대 가장자리가 보이지 않게 한다.
  if(kind !== 'flight'){
   const ground = mesh(scene,new THREE.PlaneGeometry(150,150),mat(kind === 'crowd' ? '#dedfdc' : '#9ba3ae'));
   ground.rotation.x = -Math.PI/2;
@@ -83,31 +85,31 @@ function build(host){
    scene.background.set('#e5f4ff');
   }
  }
- let animate=()=>{};
+ let animate: (time: number) => void=()=>{};
  if(kind==='flight'){
   const canvas=document.createElement('canvas');
   canvas.width=960; canvas.height=760;
-  const ctx=canvas.getContext('2d');
+  const ctx=canvas.getContext('2d')!;
   const screen=new THREE.CanvasTexture(canvas);
   screen.colorSpace=THREE.SRGBColorSpace;
   screen.anisotropy=renderer.capabilities.getMaxAnisotropy();
   mesh(root,new THREE.PlaneGeometry(6.05,6.05*760/960),
    new THREE.MeshBasicMaterial({map:screen,transparent:true,toneMapped:false}),0,0,.161);
-  function rect(x,y,w,h,r,color){
+  function rect(x: number,y: number,w: number,h: number,r: number,color: string){
    ctx.fillStyle=color;
    ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();
   }
-  function text(value,x,y,size,weight=500,color='#233749'){
+  function text(value: string,x: number,y: number,size: number,weight=500,color='#233749'){
    ctx.fillStyle=color;ctx.font=weight+' '+size+'px system-ui,sans-serif';ctx.fillText(value,x,y);
   }
-  // Paint the result once. Fade it in at its final position.
+  // 검색 결과는 한 번 그려 두고, 입력이 끝나면 투명도만 바꿔 표시한다.
   text('대한항공 · KE1533',40,367,41,500,'#445f74');
   text('제주',36,480,98,650);text('CJU',262,475,51,500,'#526e82');
   rect(40,530,878,3,1,'#9dbdcf');
   text('출발 시각',40,610,38,500,'#445f74');text('탑승구',566,610,38,500,'#445f74');
   text('14:20',36,712,82,650);text('5',562,712,82,650);
-  const resultCanvas=canvas.cloneNode();
-  resultCanvas.getContext('2d').drawImage(canvas,0,0);
+  const resultCanvas=canvas.cloneNode() as HTMLCanvasElement;
+  resultCanvas.getContext('2d')!.drawImage(canvas,0,0);
   const resultTexture=new THREE.CanvasTexture(resultCanvas);
   resultTexture.colorSpace=screen.colorSpace;
   resultTexture.anisotropy=screen.anisotropy;
@@ -139,7 +141,7 @@ function build(host){
   };
  }else if(kind==='crowd'){
   const queues = [1, 6, 3];
-  const cloth = c => new THREE.MeshPhysicalMaterial({color:c,roughness:.8,sheen:.6,sheenColor:new THREE.Color('#ffffff'),sheenRoughness:.6});
+  const cloth = (c: THREE.ColorRepresentation) => new THREE.MeshPhysicalMaterial({color:c,roughness:.8,sheen:.6,sheenColor:new THREE.Color('#ffffff'),sheenRoughness:.6});
   const shirts = ['#6487a0','#e1b39b','#bfc9b4','#9facc3'].map(cloth);
   const pants = ['#2c4a77','#55607a','#3d5f8c','#e9e4da'].map(cloth);
   const hairs = ['#2b3149','#5b3f33','#1f2430','#8a5a3c'].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.55}));
@@ -147,7 +149,7 @@ function build(host){
   const faceParts = {eye:mat('#1d2433'),blush:mat('#f3aaa0'),mouth:mat('#b9655c')};
   const soleMat = mat('#f4f6fa');
   const blob = blobTexture();
-  // Daylight through a curtain wall behind the security checkpoint.
+  // 보안검색대 뒤 유리벽으로 들어오는 자연광
   for(let panel=-3; panel<=3; panel++){
    box(root,2.45,3.6,.08,glass,panel*2.5,1.8,-3.7);
    box(root,.05,3.6,.1,silver,panel*2.5-1.24,1.8,-3.65);
@@ -165,8 +167,8 @@ function build(host){
   }
   bake(posts);
   const luggageColors = [physical('#78add6'), physical('#d0a381'), physical('#6f9298')];
-  // Rolling carry-on behind the traveler, pulled by the right hand.
-  function addSuitcase(person, x, z, shell) {
+  // 여행객이 오른손으로 끄는 기내용 캐리어
+  function addSuitcase(person: THREE.Object3D, x: number, z: number, shell: THREE.Material) {
    const bag = new THREE.Group();
    bag.position.set(x + .35, .11, z + .19);
    bag.rotation.x = -.16;
@@ -181,19 +183,19 @@ function build(host){
    bake(bag);
    return bag;
   }
-  function addBackpack(person,x,z,shell) {
+  function addBackpack(person: THREE.Object3D,x: number,z: number,shell: THREE.Material) {
    mesh(person,softBox(.3,.36,.18,.35,.3,.5,14),shell,x,.6,z+.17);
    mesh(person,softBox(.22,.14,.08,.35,.4,.5,10),shell,x,.51,z+.27);
    mesh(person,new THREE.TorusGeometry(.03,.012,6,12,Math.PI),navy,x,.79,z+.17).rotation.y=Math.PI/2;
    for (const dx of [-.11,.11]) mesh(person,tube([[x+dx,.76,z+.1],[x+dx,.82,z],[x+dx,.74,z-.12],[x+dx,.55,z-.1]],.022,{seg:10,radial:6}),navy);
   }
-  function shoe(person, x, upper){
+  function shoe(person: THREE.Object3D, x: number, upper: THREE.Material){
    const g = new THREE.Group(); person.add(g); g.position.set(x,0,-.035);
    sneaker((geo,m,a=0,b=0,c=0)=>mesh(g,geo,m,a,b,c),.12,upper,soleMat,0,0,0,.5);
    g.rotation.y = Math.PI; bake(g); return g;
   }
-  const travelers = [];
-  const lights = [];
+  const travelers: {person: THREE.Group; row: number; lane: number; shoes: THREE.Group[]}[] = [];
+  const lights: THREE.MeshStandardMaterial[] = [];
   const gates = new THREE.Group(); root.add(gates);
   queues.forEach((count, lane) => {
    const x = (lane - 1) * 2;
@@ -212,16 +214,16 @@ function build(host){
     const shirt = shirts[(row+lane)%shirts.length], skin = skins[i%skins.length], hair = hairs[(i+1)%hairs.length], trousers = pants[(row+2*lane)%pants.length];
     const shoes = [-.085,.085].map(dx => shoe(person, dx, i%2 ? navy : white));
     travelers.push({person,row,lane,shoes});
-    // Body built facing +z, then turned to face the gate (-z).
+    // 몸은 +z 방향으로 만든 다음 검색대가 있는 -z 방향으로 돌린다.
     const fig = new THREE.Group(); fig.rotation.y = Math.PI;
-    const f = (geo,m,a=0,b=0,c=0) => mesh(fig,geo,m,a,b,c);
+    const f = (geo: THREE.BufferGeometry,m: THREE.Material,a=0,b=0,c=0) => mesh(fig,geo,m,a,b,c);
     for (const dx of [-.085,.085]) f(tube([[dx,.44,0],[dx,.25,0],[dx,.1,.005]],.068,{r2:.058,seg:6,radial:10}),trousers);
     const torso = f(lathe([[0,0],[.17,0],[.2,.05],[.21,.2],[.2,.34],[.15,.43],[.07,.47],[0,.47]],16),shirt,0,.38,0);
     torso.scale.z = .78;
     for (const s of [-1,1]) {
      const pulling = s < 0 && (lane + row) % 3 !== 1;
-     const hand = pulling ? [-.34,.76,-.09] : [s*.25,.46,.05];
-     const elbow = pulling ? [-.31,.66,-.03] : [s*.25,.58,.02];
+     const hand: THREE.Vector3Tuple = pulling ? [-.34,.76,-.09] : [s*.25,.46,.05];
+     const elbow: THREE.Vector3Tuple = pulling ? [-.31,.66,-.03] : [s*.25,.58,.02];
      f(tube([[s*.19,.78,0],elbow,hand],.055,{r2:.048,seg:8,radial:8}),shirt);
      mitten(f,.045,skin,hand[0],hand[1]-.03,hand[2],s,.5);
     }
@@ -273,7 +275,7 @@ function build(host){
   const carGlass = new THREE.MeshPhysicalMaterial({color:'#24364f',roughness:.15,metalness:.2,clearcoat:1});
   const tyre = mat('#2a3340'), rim = mat('#d5dde8'), headlight = new THREE.MeshStandardMaterial({color:'#fffbe8',emissive:'#fff3c4',emissiveIntensity:.4}), taillight = mat('#f2726c');
   const carBlob = blobTexture();
-  function car(m){const g=toyCar(m,carGlass,tyre,rim,headlight,taillight,.82);contactShadow(g,carBlob,1.5,2.4,{y:.006,opacity:.3});root.add(g);return g;}
+  function car(m: THREE.Material){const g=toyCar(m,carGlass,tyre,rim,headlight,taillight,.82);contactShadow(g,carBlob,1.5,2.4,{y:.006,opacity:.3});root.add(g);return g;}
   const occupied = new Set([0, 1, 3, 4, 6, 8, 11]);
 
   for(let slot=0; slot<12; slot++){
@@ -282,7 +284,7 @@ function build(host){
 
   }
   const arriving = car(arrivingPaint);
-  const path = new THREE.CurvePath();
+  const path = new THREE.CurvePath<THREE.Vector3>();
   path.add(new THREE.LineCurve3(new THREE.Vector3(10,0,0), new THREE.Vector3(2.5,0,0)));
   path.add(new THREE.CubicBezierCurve3(
    new THREE.Vector3(2.5,0,0), new THREE.Vector3(1.5,0,0),
@@ -308,13 +310,13 @@ function build(host){
  const target = new THREE.Vector3(...framing.target);
  const offset = new THREE.Vector3(...framing.position).sub(target);
  let lastFrame = 0;
- function render(time) {
+ function render(time: number) {
   lastFrame = time;
   camera.aspect = host.clientWidth / host.clientHeight;
   if (kind === 'flight') {
    camera.position.copy(offset).multiplyScalar(1 / Math.min(camera.aspect, 1)).add(target);
   } else {
-   // Crop the same square view as the cover-fit poster without moving the camera.
+   // 카메라 위치를 고정하고 첫 이미지와 같은 범위를 잘라 로딩 전후의 구도를 맞춘다.
    camera.position.copy(offset).add(target);
    camera.zoom = Math.max(1, camera.aspect);
   }

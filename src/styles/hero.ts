@@ -15,8 +15,8 @@ export const landingTitle = css`
   @media (max-width:800px) { font-size: 32px; line-height: 1.5; }
 `;
 
-// :where scopes these existing selectors without increasing their specificity.
-// Keep rule order: later declarations and media queries intentionally override earlier ones.
+// :where로 선택자의 우선순위를 높이지 않고 이 컴포넌트 안에서만 적용한다.
+// 뒤쪽 선언과 미디어 쿼리가 앞쪽 스타일을 덮어쓰므로 순서를 유지한다.
 export const HeroIntro = styled.section`
   :where(&).hero-intro {
     text-align: center;

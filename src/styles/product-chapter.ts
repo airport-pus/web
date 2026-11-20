@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 
-// App and MCP share the same chapter opener; their content follows below it.
+// 앱과 MCP 소개에서 같은 섹션 도입부를 사용한다.
 export const ProductChapter = styled.header`
   border-top: 1px dashed #e4e6e9;
   padding: 96px 24px 76px;

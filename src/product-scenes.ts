@@ -1,8 +1,9 @@
+type CanvasLine = {text: string; x?: number; y: number; color?: string; size?: number; weight?: number; align?: CanvasTextAlign};
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { disposeScene } from './dispose-scene';
 
-export function mountProductScene(host, kind) {
+export function mountProductScene(host: HTMLElement, kind: string) {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.shadowMap.enabled = true;
@@ -19,24 +20,24 @@ export function mountProductScene(host, kind) {
   Object.assign(light.shadow.camera, { left: -12, right: 12, top: 12, bottom: -12 });
   light.shadow.normalBias = .03; scene.add(light);
   const root = new THREE.Group(); scene.add(root);
-  const material = color => new THREE.MeshStandardMaterial({ color, roughness: .42, metalness: .08 });
+  const material = (color: THREE.ColorRepresentation) => new THREE.MeshStandardMaterial({ color, roughness: .42, metalness: .08 });
   const white = material('#ffffff'), navy = material('#123c65'), lilac = material('#aaa0df'), blue = material('#91b9d9'), pale = material('#e5edf4'), dark = material('#26364a');
-  function mesh(parent, geometry, mat, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geometry, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; }
-  function box(parent, w, h, d, mat, x = 0, y = 0, z = 0, radius = .08) { return mesh(parent, new RoundedBoxGeometry(w, h, d, 3, Math.min(radius, w / 3, h / 3, d / 3)), mat, x, y, z); }
-  function cylinder(parent, radius, height, mat, x, y, z) { return mesh(parent, new THREE.CylinderGeometry(radius, radius, height, 24), mat, x, y, z); }
-  function sphere(parent, radius, mat, x, y, z) { return mesh(parent, new THREE.SphereGeometry(radius, 24, 16), mat, x, y, z); }
-  function label(parent, lines, w, h, x, y, z, bg = '#ffffff') {
+  function mesh(parent: THREE.Object3D, geometry: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geometry, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; }
+  function box(parent: THREE.Object3D, w: number, h: number, d: number, mat: THREE.Material, x = 0, y = 0, z = 0, radius = .08) { return mesh(parent, new RoundedBoxGeometry(w, h, d, 3, Math.min(radius, w / 3, h / 3, d / 3)), mat, x, y, z); }
+  function cylinder(parent: THREE.Object3D, radius: number, height: number, mat: THREE.Material, x: number, y: number, z: number) { return mesh(parent, new THREE.CylinderGeometry(radius, radius, height, 24), mat, x, y, z); }
+  function sphere(parent: THREE.Object3D, radius: number, mat: THREE.Material, x: number, y: number, z: number) { return mesh(parent, new THREE.SphereGeometry(radius, 24, 16), mat, x, y, z); }
+  function label(parent: THREE.Object3D, lines: CanvasLine[], w: number, h: number, x: number, y: number, z: number, bg = '#ffffff') {
     const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = Math.round(1024 * h / w);
-    const ctx = canvas.getContext('2d'); ctx.fillStyle = bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d')!; ctx.fillStyle = bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (const line of lines) { ctx.fillStyle = line.color || '#203650'; ctx.font = `${line.weight || 600} ${line.size || 62}px Pretendard, sans-serif`; ctx.fillText(line.text, line.x || 65, line.y); }
     const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
     const plane = mesh(parent, new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }), x, y, z); plane.castShadow = false; return plane;
   }
   const floor = mesh(scene, new THREE.PlaneGeometry(100, 100), new THREE.ShadowMaterial({ opacity: kind === 'mcp' ? .035 : .09 }), 0, -.13, 0); floor.rotation.x = -Math.PI / 2; floor.castShadow = false;
-  const moving = [];
+  const moving: {object: THREE.Object3D; y: number; phase?: number; amplitude: number}[] = [];
   if (kind === 'airport') {
     box(root, 12, .2, 7, material('#f5ede6'), 0, 0, 0, .16);
-    // Terminal and glazed departure hall.
+    // 공항 터미널과 유리로 된 출국장
     box(root, 5.5, 1.2, 1.9, white, -.5, .7, -1.1, .15);
     box(root, 5.8, .2, 2.2, pale, -.5, 1.4, -1.1);
     for (let i = 0; i < 11; i++) box(root, .38, .8, .05, blue, -2.9 + i * .48, .8, -.12, .02);
@@ -45,7 +46,7 @@ export function mountProductScene(host, kind) {
     box(root, 1.3, .6, 1.2, navy, -4, 2.8, -1.3);
     box(root, 1.1, .3, 1.03, blue, -4, 2.83, -1.3);
     box(root, 1.5, .15, 1.4, white, -4, 3.18, -1.3); cylinder(root, .04, .6, navy, -4, 3.5, -1.3);
-    // Passenger queue and parking spaces are part of the same airport scene.
+    // 여객 대기열과 주차 공간을 같은 공항 장면에 배치한다.
     for (let i = 0; i < 6; i++) { const x = -2.1 + (i % 3) * .7, z = .8 + Math.floor(i / 3) * .7; cylinder(root, .11, .38, i % 2 ? navy : blue, x, .45, z); sphere(root, .13, material('#e7c5af'), x, .78, z); box(root, .16, .23, .18, pale, x + .2, .28, z); }
     for (let i = 0; i < 3; i++) { const z = -1.8 + i * 1.4; box(root, 2, .02, .04, white, 4, .13, z + .6); box(root, .8, .3, 1.15, i === 1 ? navy : white, 4, .35, z, .12); box(root, .65, .28, .55, blue, 4, .6, z, .1); }
     box(root, 10.5, .025, .65, material('#d8dce2'), 0, .14, 2.65);
@@ -58,7 +59,7 @@ export function mountProductScene(host, kind) {
     plane.position.set(.8, 3.3, .8); plane.rotation.set(.08, -.6, -.07); moving.push({ object: plane, y: 3.3, amplitude: .14 });
     camera.position.set(11, 9, 14); camera.lookAt(0, 1.1, 0);
   } else {
-    // Physical phone, question panel and answer panel connected through an MCP hub.
+    // MCP 허브를 중심으로 휴대폰과 질문·답변 패널을 연결한다.
     const phone = new THREE.Group(); root.add(phone); phone.position.set(-2.6, 2.9, 0); phone.rotation.y = .18; phone.rotation.z = -.08;
     box(phone, 2.65, 5.5, .3, dark, 0, 0, 0, .25);
     box(phone, 2.48, 5.3, .04, white, 0, 0, .18, .2);
@@ -75,7 +76,7 @@ export function mountProductScene(host, kind) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   function size() { if (disposed || !host.clientWidth || !host.clientHeight) return; const aspect = host.clientWidth / host.clientHeight; camera.aspect = aspect; camera.fov = aspect < 1 ? (kind === 'mcp' ? 34 : 45) : 32; camera.updateProjectionMatrix(); renderer.setSize(host.clientWidth, host.clientHeight, false); draw(); }
   function draw() { for (const item of moving) item.object.position.y = item.y + (reduced.matches ? 0 : Math.sin(elapsed * .8 + (item.phase || 0)) * item.amplitude); renderer.render(scene, camera); }
-  function tick(time) { raf = 0; elapsed += previous ? Math.min((time - previous) / 1000, .05) : 0; previous = time; draw(); if (visible && !document.hidden && !reduced.matches) raf = requestAnimationFrame(tick); }
+  function tick(time: number) { raf = 0; elapsed += previous ? Math.min((time - previous) / 1000, .05) : 0; previous = time; draw(); if (visible && !document.hidden && !reduced.matches) raf = requestAnimationFrame(tick); }
   function sync() { cancelAnimationFrame(raf); raf = 0; previous = 0; if (visible && !document.hidden) { draw(); if (!reduced.matches) raf = requestAnimationFrame(tick); } }
   const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); }); observer.observe(host);
   const resize = new ResizeObserver(size); resize.observe(host);

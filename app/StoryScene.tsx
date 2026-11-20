@@ -1,13 +1,13 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
-export default function StoryScene({ kind, label }) {
-  const host = useRef(null);
+export default function StoryScene({ kind, label }: {kind: string; label: string}) {
+  const host = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
-    let cancelled = false, dispose;
+    let cancelled = false, dispose: (() => void) | undefined;
     Promise.all([import('../src/product-scenes'), document.fonts.ready]).then(([{ mountProductScene }]) => {
-      if (cancelled) return;
+      if (cancelled || !host.current) return;
       try { dispose = mountProductScene(host.current, kind); }
       catch { setFailed(true); }
     }).catch(() => { if (!cancelled) setFailed(true); });

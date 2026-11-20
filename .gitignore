@@ -10,3 +10,7 @@ out/
 # Browser verification artifacts
 test-results/
 playwright-report/
+
+# Generated TypeScript files
+next-env.d.ts
+*.tsbuildinfo

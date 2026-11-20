@@ -1,11 +1,11 @@
 import { SiteHeader } from "../src/styles/header";
 import { HeroIntro } from "../src/styles/hero";
 import { FlightScroll } from "../src/styles/flight";
-import ProductStorySection from "./product-story";
+import ProductStorySection from "./ProductStorySection";
 import { SiteFooter } from "../src/styles/footer";
 import { Toast } from "../src/styles/toast";
-import Ending from "./landing-ending";
-import LandingRuntime from "./landing-runtime";
+import LandingEndingSection from "./LandingEndingSection";
+import LandingRuntime from "./LandingRuntime";
 
 export default function HomePage() {
  return <>
@@ -18,7 +18,7 @@ export default function HomePage() {
 
 <ProductStorySection />
 </main>
-<Ending>
+<LandingEndingSection>
 <SiteFooter>
   <div className="section-shell">
     <img src="/brand/sandeul.svg" width="90" height="24" alt="Sandeul" />
@@ -29,7 +29,7 @@ export default function HomePage() {
     <nav aria-label="서비스 정보"><a href="/data">데이터 안내</a><a href="https://github.com/airport-pus/web" target="_blank" rel="noopener noreferrer">개발자 GitHub ↗</a></nav>
   </div>
 </SiteFooter>
-</Ending>
+</LandingEndingSection>
 <Toast id="ai-toast" role="status" aria-live="polite"></Toast>
 <LandingRuntime />
 </>;

@@ -7,9 +7,9 @@ const cards = {
   crowd: { title: '공항 혼잡도 예시', rows: [['공항', '김해국제공항'], ['혼잡도', '여유'], ['기준', '14:00 · 고정 예시']] },
   parking: { title: '주차 안내 예시', rows: [['주차장', '김해공항 국내선'], ['빈자리', '20대'], ['상태', '주차 가능']] },
 };
-function answer(question) {
+function answer(question: string) {
   if (/인천|김포|부산 외|대구|청주|광주|무안|양양|울산|여수|사천|원주|군산|포항|제주공항/.test(question)) return { text: '현재 체험은 김해공항의 고정 예시만 제공해요. 이 질문의 실제 결과는 조회하지 않았어요.', keys: [] };
-  const keys = [];
+  const keys: (keyof typeof cards)[] = [];
   if (/항공|비행|운항|출발|도착|탑승|편명|KE\d|제주|얼마나 걸|소요/i.test(question)) keys.push('flight');
   if (/혼잡|붐비|붐벼|대기|사람|복잡/.test(question)) keys.push('crowd');
   if (/주차|빈자리|자리|요금/.test(question)) keys.push('parking');
@@ -19,13 +19,13 @@ function answer(question) {
 export default function AIDemo() {
   const [input, setInput] = useState('');
   const [question, setQuestion] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<ReturnType<typeof answer> | null>(null);
   const [busy, setBusy] = useState(false);
   const [used, setUsed] = useState(false);
-  const timer = useRef(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const locked = useRef(false);
   useEffect(() => () => clearTimeout(timer.current), []);
-  function submit(value) {
+  function submit(value: string) {
     const text = value.trim();
     if (!text || locked.current || used) return;
     locked.current = true; setUsed(true); setQuestion(text); setInput(''); setBusy(true);

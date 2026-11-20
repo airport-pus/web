@@ -4,7 +4,7 @@
 
 ## 사용 기술
 
-- Next.js App Router, React, styled-components 6, JavaScript ES Modules
+- Next.js App Router, React, styled-components 6, TypeScript
 - Next.js: 서버 렌더링, 로컬 개발 서버 및 프로덕션 빌드
 - Three.js: 3D 모델, 조명, 카메라와 애니메이션
 - IntersectionObserver, requestAnimationFrame: 화면 진입 감지와 스크롤 연출
@@ -25,7 +25,7 @@ npm run start
 
 ## 기능 소개 섹션
 
-중앙 제목과 설명 아래에 운항정보·공항 혼잡도·주차 안내 탭과 큰 카드 한 장을 배치합니다. 탭과 좌우 버튼으로 설명·3D·정보 예시를 함께 전환합니다. 탭은 방향키와 Home/End 키를 지원합니다. 모바일에서는 카드 안의 설명과 비주얼을 위아래로 배치합니다. 첫 화면의 소파 장면과 헤더는 유지했습니다. 기능 소개 마크업은 `app/feature-sections.jsx`에서 관리합니다.
+중앙 제목과 설명 아래에 운항정보·공항 혼잡도·주차 안내 탭과 큰 카드 한 장을 배치합니다. 탭과 좌우 버튼으로 설명·3D·정보 예시를 함께 전환합니다. 탭은 방향키와 Home/End 키를 지원합니다. 모바일에서는 카드 안의 설명과 비주얼을 위아래로 배치합니다. 첫 화면의 소파 장면과 헤더는 유지했습니다. 기능 소개 마크업은 `app/FeatureSections.tsx`에서 관리합니다.
 
 3D는 Three.js 실시간 렌더링입니다. 화면 안에 있는 장면만 재생하고, 각 캔버스의 그리기 영역을 제한하여 다른 섹션과 겹치지 않게 했습니다. 모션 감소 설정에서는 정지 장면을 표시합니다. 표시 수치와 항공편은 소개용 고정 데이터이며 실시간 API가 아닙니다.
 
@@ -33,14 +33,14 @@ AI 기능과 앱 다운로드는 출시 준비 안내를 표시합니다. AI 상
 
 ## Next.js 구성
 
-`app/page.jsx`는 기존 마크업을 서버에서 렌더링하고, `app/landing-runtime.jsx`는 hydration 후 3D와 스크롤 동작을 초기화합니다. 스타일은 `src/styles/`의 섹션별 styled-components로 관리합니다. 에셋, 3D 모델과 카메라 경로는 유지합니다. 클라이언트 재마운트 시 이벤트·옵저버·애니메이션·WebGL 자원을 해제합니다. 개발 서버와 프로덕션 서버는 동일한 5173 포트를 사용하므로 하나만 실행하세요. Node.js 20.9 이상이 필요합니다.
+`app/page.tsx`는 기존 마크업을 서버에서 렌더링하고, `app/LandingRuntime.tsx`는 hydration 후 3D와 스크롤 동작을 초기화합니다. 스타일은 `src/styles/`의 섹션별 styled-components로 관리합니다. 에셋, 3D 모델과 카메라 경로는 유지합니다. 클라이언트 재마운트 시 이벤트·옵저버·애니메이션·WebGL 자원을 해제합니다. 개발 서버와 프로덕션 서버는 동일한 5173 포트를 사용하므로 하나만 실행하세요. Node.js 20.9 이상이 필요합니다.
 
 
 ## 스타일 구성과 동일성 검증
 
 - `src/styles/global.js`: 기본 스타일, 색상 변수, 공통 레이아웃
 - `src/styles/header.js`, `hero.js`, `flight.js`, `intro.js`, `features.js`, `footer.js`, `toast.js`: 섹션별 styled 컴포넌트
-- `app/styled-components-registry.jsx`: 서버 렌더링 시 스타일 수집 및 삽입
+- `app/StyledComponentsRegistry.tsx`: 서버 렌더링 시 스타일 수집 및 삽입
 - `next.config.mjs`: styled-components 컴파일러 설정
 
 기존 화면을 유지하는 섹션 스타일은 `:where(&)`로 범위를 제한해 선택자의 우선순위를 유지합니다. 개편한 기능 소개는 별도의 섹션 스타일을 사용합니다.
@@ -81,8 +81,8 @@ npm run check:styles -- compare /tmp/sandeul-style-baseline http://127.0.0.1:517
 
 Below the original hero and scroll scene, the landing follows a product-led structure: supported airports → app overview → three feature visuals → switchable travel scenarios → ticket push → airport 3D → MCP preview and connection → data/coverage panels → stores.
 
-- `app/travel-showcase.jsx`: selectable airport device preview and travel scenarios (illustrative content, not live flight queries).
-- `app/service-proof.jsx`: real supported scope and official source links; no customer-count or testimonial placeholders.
+- `app/TravelShowcase.tsx`: selectable airport device preview and travel scenarios (illustrative content, not live flight queries).
+- `app/ServiceProofSection.tsx`: real supported scope and official source links; no customer-count or testimonial placeholders.
 - `src/landing-media.js`: replacement slots for actual app captures/videos; `src/store-links.js`: store destinations when available.
 - MCP preview remains one fixed example per page load; it does not send questions to an AI service.
 - Styling is scoped with styled-components; the approved first hero/3D is unchanged by this layout revision.

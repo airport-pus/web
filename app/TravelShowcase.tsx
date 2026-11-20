@@ -8,15 +8,15 @@ const features = [
  {key:'crowd', label:'보안검색장 혼잡도', value:'2구간 혼잡', detail:'1구간 여유　·　3구간 보통',title:'공항에 가기 전에, 혼잡도부터.',description:'구간별 혼잡 현황과 시간대별 승객 수를 살펴보세요. 기다릴 시간까지 생각하고 출발할 수 있어요.'},
  {key:'parking', label:'국내선 주차장', value:'빈자리에 주차 후 예상 요금 계산', detail:'예시 요율로 90분 이용 시 3,000원',title:'주차 자리와 예상 요금을 함께.',description:'빈자리가 있는 주차장을 찾고, 차를 세워둘 시간과 할인 조건으로 예상 요금을 확인하세요.'},
 ];
-function playbackAsset(name, format) {
+function playbackAsset(name: string, format: string) {
  return `/assets/feature-playback/${name}.${format}?v=2`;
 }
 
-function ScenePlayback({kind, zone}) {
- const ref = useRef(null);
+function ScenePlayback({kind, zone}: {kind: string; zone: number}) {
+ const ref = useRef<HTMLVideoElement>(null);
  const clip = kind === 'crowd' && zone !== 1 ? `crowd-${zone + 1}` : kind;
  useEffect(() => {
-   const video = ref.current;
+   const video = ref.current!;
    let visible = false;
    function sync() {
      if (visible && !document.hidden) video.play().catch(() => { video.controls = true; });
@@ -35,29 +35,29 @@ function ScenePlayback({kind, zone}) {
    poster={playbackAsset(kind, 'webp')} src={playbackAsset(clip, 'mp4')} />;
 }
 export default function TravelShowcase() {
- const section = useRef(null);
- const [unavailable, setUnavailable] = useState({});
+ const section = useRef<HTMLElement>(null);
+ const [unavailable, setUnavailable] = useState<Record<string, boolean>>({});
  const [zone, setZone] = useState(1);
  const [minutes, setMinutes] = useState(90);
  const congestion = ['여유','혼잡','보통'];
  useEffect(() => {
    let mounted = true;
-   let dispose;
+   let dispose: (() => void) | undefined;
    import('../src/feature-scenes').then(({ mountFeatureScenes }) => {
-     if (mounted) dispose = mountFeatureScenes(section.current, kind => {
+     if (mounted && section.current) dispose = mountFeatureScenes(section.current, kind => {
        if (mounted) setUnavailable(previous => ({ ...previous, [kind]: true }));
      });
    }).catch(() => { if (mounted) setUnavailable({flight:true, crowd:true, parking:true}); });
    return () => { mounted = false; dispose?.(); };
  }, []);
- function replayScene(kind) {
-   const video = section.current.querySelector(`[data-media-slot="${kind === 'flight' ? 'flights' : kind}"] video`);
+ function replayScene(kind: string) {
+   const video = section.current?.querySelector<HTMLVideoElement>(`[data-media-slot="${kind === 'flight' ? 'flights' : kind}"] video`);
    if (video) {
      video.currentTime = 0;
      video.play().catch(() => { video.controls = true; });
      return;
    }
-   section.current.querySelector(`[data-feature-scene="${kind}"]`).dispatchEvent(new Event('replay-scene'));
+   section.current?.querySelector(`[data-feature-scene="${kind}"]`)?.dispatchEvent(new Event('replay-scene'));
  }
  return <Showcase ref={section} id="app-features" aria-labelledby="app-features-title">
  <header className="feature-intro">

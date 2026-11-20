@@ -1,7 +1,7 @@
 import { LandingEnding } from '../src/styles/landing-ending';
 import { storeLinks } from '../src/store-links';
 
-export default function Ending({ children }) {
+export default function LandingEndingSection({ children }: React.PropsWithChildren) {
   return (
     <LandingEnding>
       <section aria-labelledby="closing-title" className="closing-panel">
@@ -14,7 +14,7 @@ export default function Ending({ children }) {
         <details className="store-picker">
           <summary>앱 다운로드 <span aria-hidden="true">›</span></summary>
           <div className="store-options">
-            {Object.entries({ ios: 'App Store', android: 'Google Play' }).map(([key, name]) =>
+            {([['ios', 'App Store'], ['android', 'Google Play']] as const).map(([key, name]) =>
               storeLinks[key] ? (
                 <a key={key} href={storeLinks[key]} target="_blank" rel="noopener noreferrer">{name}</a>
               ) : (

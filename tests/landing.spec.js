@@ -40,11 +40,11 @@ test('the server sends styled content before hydration', async ({ browser }) => 
 
 for (const width of [390, 1440]) {
   test(`hero scrolling eases smoothly and settles at ${width}px`, async ({ page }) => {
-    // Software-rendered WebGL can take longer to produce the sampled frames.
+    // 소프트웨어 렌더러에서는 프레임을 그리는 데 더 오래 걸릴 수 있다.
     test.setTimeout(60000);
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    // Count actual WebGL draws without adding test hooks to application code.
+    // 앱에 테스트 전용 코드를 추가하지 않고 실제 WebGL 그리기 호출을 센다.
     await page.addInitScript(() => {
       for (const method of ['drawElements', 'drawArrays']) {
         const original = WebGL2RenderingContext.prototype[method];

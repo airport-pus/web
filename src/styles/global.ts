@@ -2,7 +2,7 @@
 
 import { createGlobalStyle } from 'styled-components';
 
-// Shared defaults and layout utilities keep their original cascade order.
+// 공통 기본값과 레이아웃 유틸리티의 적용 순서를 유지한다.
 export const GlobalStyles = createGlobalStyle`
   :root {
     --ink: #191f28;

@@ -1,5 +1,5 @@
-// Decorative airport scenes, not depictions of the actual terminal buildings.
-export default function AirportIllustration({ code }) {
+// 각 공항을 상징적으로 표현한 일러스트다.
+export default function AirportIllustration({ code }: {code: string}) {
   const gradient = `airport-sky-${code}`;
   return <svg className="airport-illustration" viewBox="0 0 240 170" fill="none" aria-hidden="true">
     <defs><linearGradient id={gradient} x1="120" y1="15" x2="120" y2="145" gradientUnits="userSpaceOnUse"><stop stopColor="#EDF5FF" /><stop offset="1" stopColor="#EDF5FF" stopOpacity="0" /></linearGradient></defs>

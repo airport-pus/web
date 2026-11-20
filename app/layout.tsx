@@ -1,4 +1,4 @@
-import StyledComponentsRegistry from './styled-components-registry';
+import StyledComponentsRegistry from './StyledComponentsRegistry';
 import { GlobalStyles } from '../src/styles/global';
 
 export const metadata = {
@@ -9,6 +9,6 @@ export const metadata = {
  icons: {icon: {url:'/brand/app-icon.svg',type:'image/svg+xml'},apple:'/brand/app-icon.png'},
 };
 
-export default function RootLayout({children}) {
+export default function RootLayout({children}: React.PropsWithChildren) {
  return <html lang="ko"><head><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" /></head><body><StyledComponentsRegistry><GlobalStyles />{children}</StyledComponentsRegistry></body></html>;
 }

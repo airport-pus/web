@@ -52,7 +52,7 @@ const Screen = styled.div`
   }
 `;
 
-export default function PhoneMockup({ screenSrc, alt = '' }) {
+export default function PhoneMockup({ screenSrc, alt = '' }: {screenSrc?: string; alt?: string}) {
   return (
     <Frame aria-hidden={screenSrc ? undefined : true}>
       <Screen>{screenSrc && <img src={screenSrc} alt={alt} loading="lazy" />}</Screen>
