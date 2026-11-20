@@ -9,6 +9,23 @@ export const GlobalStyles = createGlobalStyle`
     --ink2: #4e5968;
     --ink3: #8b95a1;
     --blue: #3182f6;
+    /* Motion tokens: strong ease-out for UI feedback and entrances. */
+    --ease-out: cubic-bezier(.23, 1, .32, 1);
+    --ease-in-out: cubic-bezier(.77, 0, .175, 1);
+    /* Shared chip/toggle colors used by every small option button. */
+    --chip-bg: #f1f4f7;
+    --chip-bg-hover: #e6ecf1;
+    --chip-ink: #4a5966;
+    --chip-on-bg: #e2eff9;
+    --chip-on-ink: #1d4a6b;
+    --chip-on-ring: #b9d6ec;
+  }
+  ::selection {
+    background: #cfe5f8;
+    color: #0d2a40;
+  }
+  button, summary, a {
+    -webkit-tap-highlight-color: transparent;
   }
   * {
     box-sizing: border-box;
@@ -43,7 +60,7 @@ export const GlobalStyles = createGlobalStyle`
   }
   :focus-visible {
     outline: 2px solid #3182f6;
-    outline-offset: 5px;
+    outline-offset: 3px;
   }
   html {
     scroll-behavior: smooth;
@@ -64,6 +81,44 @@ export const GlobalStyles = createGlobalStyle`
     * {
       transition: none !important;
     }
+  }
+  /* Shared chip: small toggle/option buttons across the landing sections. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--chip-bg);
+    color: var(--chip-ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .16s var(--ease-out);
+  }
+  .chip[aria-pressed=true] {
+    background: var(--chip-on-bg);
+    color: var(--chip-on-ink);
+    box-shadow: inset 0 0 0 1px var(--chip-on-ring);
+  }
+  .chip:active:not(:disabled) {
+    transform: scale(.97);
+  }
+  .chip:disabled {
+    cursor: default;
+    opacity: .55;
+  }
+  @media (hover:hover) and (pointer:fine) {
+    .chip:not(:disabled):not([aria-pressed=true]):hover {
+      background: var(--chip-bg-hover);
+    }
+  }
+  @media (pointer:coarse) {
+    .chip { min-height: 44px; }
   }
   .section-shell {
     max-width: 1320px;

@@ -2,17 +2,22 @@
 
 import styled, { css } from 'styled-components';
 
+// One display voice for every landing title. Sizes are fluid clamps set per title
+// (no breakpoint overrides here, so a title's own clamp is never silently replaced).
 export const landingTitle = css`
   font-family: Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  font-size: 48px;
-  font-weight: 600;
-  line-height: 70px;
-  letter-spacing: -.02em;
+  font-size: clamp(30px, 4vw, 52px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -.04em;
   color: #08090b;
+  text-wrap: balance;
+`;
 
-  @media (min-width:801px) and (max-width:1400px) { font-size: 44px; }
-  @media (min-width:801px) and (max-width:1150px) { font-size: 36px; line-height: 1.55; }
-  @media (max-width:800px) { font-size: 32px; line-height: 1.5; }
+// Shared section-heading size (feature, ticket and AI titles).
+export const sectionTitleSize = css`
+  font-size: clamp(30px, 3.8vw, 52px);
+  line-height: 1.25;
 `;
 
 // :where scopes these existing selectors without increasing their specificity.
@@ -154,6 +159,19 @@ export const HeroIntro = styled.section`
   }
   :where(&).hero-intro h1 {
     ${landingTitle}
+    font-size: clamp(34px, 4.1vw, 58px);
+    line-height: 1.24;
+    text-wrap: pretty;
+  }
+  :where(&) .hero-desc {
+    max-width: 34em;
+    color: #3d4754;
+  }
+  :where(&) .hero-action .download {
+    transition: background-color .15s ease, transform .16s var(--ease-out);
+  }
+  :where(&) .hero-action .download:active {
+    transform: scale(.97);
   }
   @media (min-width:801px) and (max-width:1400px) {
     :where(&).hero-intro {
