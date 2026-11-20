@@ -9,7 +9,7 @@ export const Toast = styled.div`
     position: fixed;
     bottom: 32px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, 8px);
     z-index: 100;
     background: #191f28;
     color: #fff;
@@ -21,10 +21,12 @@ export const Toast = styled.div`
     width: max-content;
     opacity: 0;
     visibility: hidden;
-    transition: opacity .2s;
+    transition: opacity .2s var(--ease-out), transform .2s var(--ease-out), visibility 0s linear .2s;
   }
   :where(&)#ai-toast.show {
     opacity: 1;
     visibility: visible;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
   }
 `;

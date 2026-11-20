@@ -56,7 +56,9 @@ export const SiteHeader = styled.header`
     background: none;
     padding: 0;
     cursor: pointer;
+    transition: color .15s ease, background-color .15s ease, transform .16s var(--ease-out);
   }
+  :where(&).top nav .app-download:active { transform: scale(.97); }
   :where(&).top nav a:hover,
   :where(&).top nav button:hover {
     color: var(--ink);
