@@ -13,11 +13,6 @@ function mountHero() {
   try {
     experience = createExperience(container);
   } catch (error) {
-    const poster = new Image();
-    poster.src = '/assets/airport-cinematic.png';
-    poster.alt = '출발을 기다리는 비행기';
-    Object.assign(poster.style, { width: '100%', height: '100%', objectFit: 'cover' });
-    container.replaceChildren(poster);
     console.error(error);
     return;
   }

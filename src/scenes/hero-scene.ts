@@ -37,7 +37,6 @@ export function createExperience(container: HTMLElement) {
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1;
-  container.appendChild(renderer.domElement);
   // 소프트웨어 렌더러에서는 픽셀 처리 비용을 줄이기 위해 해상도 배율을 1로 제한한다.
   if (isSoftwareGL(renderer)) renderer.setPixelRatio(1);
   const scene = new THREE.Scene();
@@ -525,7 +524,7 @@ export function createExperience(container: HTMLElement) {
   let width = 0,
     height = 0,
     lastP = 0,
-    lastMobile = false,
+    lastMobile = small,
     lastReduce = false;
   const smooth = (n: number) => n * n * (3 - 2 * n);
   const clamp = (n: number) => Math.max(0, Math.min(1, n));
@@ -662,6 +661,8 @@ export function createExperience(container: HTMLElement) {
   const observer = new ResizeObserver(resize);
   observer.observe(container);
   resize();
+  // 첫 프레임을 그린 뒤 캔버스를 붙여 등장 효과가 로딩 중에 끝나지 않게 한다.
+  container.appendChild(renderer.domElement);
   document.fonts.ready.then(renderLast);
   const onContextLost = (event: Event) => {
     event.preventDefault();

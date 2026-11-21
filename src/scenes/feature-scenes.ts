@@ -1,3 +1,4 @@
+import { createFlightSearch } from './flight-search';
 import {disposeScene} from './dispose-scene';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -38,7 +39,7 @@ export function mountFeatureScenes(container: Document | HTMLElement = document,
   }
   const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();},{rootMargin:'0px'});observer.observe(host);
   function replay(){
-   elapsed=0;last=0;sync();
+   elapsed=0;last=0;engine?.replay?.();sync();
   }
   host.addEventListener('replay-scene',replay);
   document.addEventListener('visibilitychange',sync);
@@ -55,9 +56,10 @@ export function mountFeatureScenes(container: Document | HTMLElement = document,
  });
  return ()=>cleanups.forEach(dispose=>dispose());
 }
-function build(host: HTMLElement){
+function build(host: HTMLElement): {render(time: number): void; dispose(): void; replay?(): void} {
  const kind = host.dataset.featureScene;
- if (kind !== "flight" && kind !== "crowd" && kind !== "parking") throw new Error("Unknown feature scene");
+ if(kind==='flight') return createFlightSearch(host);
+ if (kind !== "crowd" && kind !== "parking") throw new Error("Unknown feature scene");
  const scene = new THREE.Scene();
  const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio, 1.5), 2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1;host.appendChild(renderer.domElement);
  const camera=new THREE.PerspectiveCamera(35,1,.1,100);
@@ -70,9 +72,9 @@ function build(host: HTMLElement){
  function box(g: THREE.Object3D,w: number,h: number,d: number,m: THREE.Material,x=0,y=0,z=0,r=.06){return mesh(g,new RoundedBoxGeometry(w,h,d,3,Math.min(r,w/4,h/4,d/4)),m,x,y,z);}
  function ball(g: THREE.Object3D,r: number,m: THREE.Material,x: number,y: number,z: number){return mesh(g,new THREE.SphereGeometry(r,24,16),m,x,y,z);}
  function cyl(g: THREE.Object3D,r: number,h: number,m: THREE.Material,x: number,y: number,z: number){return mesh(g,new THREE.CylinderGeometry(r,r,h,24),m,x,y,z);}
- const shadow=mesh(scene,new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:kind === "flight" ? .018 : .1}),0,-.25,0);shadow.rotation.x=-Math.PI/2;shadow.castShadow=false;shadow.visible=kind!=="flight";
+ const shadow=mesh(scene,new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:.1}),0,-.25,0);shadow.rotation.x=-Math.PI/2;shadow.castShadow=false;
  // 바닥을 화면 밖까지 연장해 받침대 가장자리가 보이지 않게 한다.
- if(kind !== 'flight'){
+ {
   const ground = mesh(scene,new THREE.PlaneGeometry(150,150),mat(kind === 'crowd' ? '#e4edf0' : '#9ba3ae'));
   ground.rotation.x = -Math.PI/2;
   ground.castShadow = false;
@@ -86,60 +88,7 @@ function build(host: HTMLElement){
   }
  }
  let animate: (time: number) => void=()=>{};
- if(kind==='flight'){
-  const canvas=document.createElement('canvas');
-  canvas.width=960; canvas.height=760;
-  const ctx=canvas.getContext('2d')!;
-  const screen=new THREE.CanvasTexture(canvas);
-  screen.colorSpace=THREE.SRGBColorSpace;
-  screen.anisotropy=renderer.capabilities.getMaxAnisotropy();
-  mesh(root,new THREE.PlaneGeometry(6.05,6.05*760/960),
-   new THREE.MeshBasicMaterial({map:screen,transparent:true,toneMapped:false}),0,0,.161);
-  function rect(x: number,y: number,w: number,h: number,r: number,color: string){
-   ctx.fillStyle=color;
-   ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();
-  }
-  function text(value: string,x: number,y: number,size: number,weight=500,color='#233749'){
-   ctx.fillStyle=color;ctx.font=weight+' '+size+'px system-ui,sans-serif';ctx.fillText(value,x,y);
-  }
-  // 검색 결과는 한 번 그려 두고, 입력이 끝나면 투명도만 바꿔 표시한다.
-  text('대한항공 · KE1533',40,367,41,500,'#445f74');
-  text('제주',36,480,98,650);text('CJU',262,475,51,500,'#526e82');
-  rect(40,530,878,3,1,'#9dbdcf');
-  text('출발 시각',40,610,38,500,'#445f74');text('탑승구',566,610,38,500,'#445f74');
-  text('14:20',36,712,82,650);text('5',562,712,82,650);
-  const resultCanvas=canvas.cloneNode() as HTMLCanvasElement;
-  resultCanvas.getContext('2d')!.drawImage(canvas,0,0);
-  const resultTexture=new THREE.CanvasTexture(resultCanvas);
-  resultTexture.colorSpace=screen.colorSpace;
-  resultTexture.anisotropy=screen.anisotropy;
-  const resultMaterial=new THREE.MeshBasicMaterial({
-   map:resultTexture, transparent:true, depthWrite:false, toneMapped:false
-  });
-  const result=mesh(root,new THREE.PlaneGeometry(6.05,6.05*760/960),resultMaterial,0,0,.161);
-  result.renderOrder=1;
-  result.castShadow=false;
-  const query='KE1533';
-  const typingStart=.35, letterInterval=.20;
-  const revealStart=typingStart+query.length*letterInterval+.18;
-  let lastCount=-1;
-  animate=time=>{
-   time %= 6;
-   const reveal=THREE.MathUtils.smootherstep(time,revealStart,revealStart+.35);
-   result.visible=reveal>0;
-   resultMaterial.opacity=reveal;
-   const count=Math.min(query.length,Math.floor(Math.max(0,time-typingStart)/letterInterval));
-   if(lastCount===count)return;
-   lastCount=count;
-   ctx.clearRect(0,0,960,760);
-   text('김해공항 출발',40,100,67,650);
-   rect(38,148,884,104,30,'#f7fcff');
-   ctx.strokeStyle='#60788b';ctx.lineWidth=5;ctx.beginPath();
-   ctx.arc(98,198,15,0,Math.PI*2);ctx.moveTo(109,209);ctx.lineTo(122,222);ctx.stroke();
-   text(count?query.slice(0,count):'편명 검색',146,216,47);
-   screen.needsUpdate=true;
-  };
- }else if(kind==='crowd'){
+ if(kind==='crowd'){
   const cloth = (c: THREE.ColorRepresentation) => new THREE.MeshPhysicalMaterial({color:c,roughness:.8,sheen:.6,sheenColor:new THREE.Color('#ffffff'),sheenRoughness:.6});
   const shirts = ['#6487a0','#e1b39b','#bfc9b4','#9facc3'].map(cloth);
   const pants = ['#2c4a77','#55607a','#3d5f8c','#e9e4da'].map(cloth);
@@ -342,7 +291,6 @@ function build(host: HTMLElement){
   };
  }
  const framing = {
-  flight: { position: [0, 0, 10.8], target: [0, 0, 0] },
   crowd: { position: [-2.1, 4.1, 6.7], target: [0, .54, .45] },
   parking: { position: [8, 11, 13], target: [0, 0, 0] },
  }[kind];
@@ -352,13 +300,8 @@ function build(host: HTMLElement){
  function render(time: number) {
   lastFrame = time;
   camera.aspect = host.clientWidth / host.clientHeight;
-  if (kind === 'flight') {
-   camera.position.copy(offset).multiplyScalar(1 / Math.min(camera.aspect, 1)).add(target);
-  } else {
-   // 카메라 위치를 고정하고 첫 이미지와 같은 범위를 잘라 로딩 전후의 구도를 맞춘다.
-   camera.position.copy(offset).add(target);
-   camera.zoom = Math.max(1, camera.aspect);
-  }
+  camera.position.copy(offset).add(target);
+  camera.zoom = Math.max(1, camera.aspect);
   camera.updateProjectionMatrix();
   camera.lookAt(target);
   animate(time);

@@ -1,13 +1,14 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import type { FeatureKind } from './features';
-export function playbackAsset(name: string, format: 'webp' | 'mp4') {
+export function playbackAsset(kind: FeatureKind, format: 'webp' | 'mp4', zone = 1) {
+  const name = kind === 'crowd' && zone !== 1 ? `crowd-${zone + 1}` : kind;
   return `/assets/feature-playback/${name}.${format}?v=${name.startsWith('crowd') ? 12 : name === 'parking' ? 5 : 2}`;
 }
 
 export default function ScenePlayback({ kind, zone }: { kind: FeatureKind; zone: number }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const clip = kind === 'crowd' && zone !== 1 ? `crowd-${zone + 1}` : kind;
+  const clip = playbackAsset(kind, 'mp4', zone);
   useEffect(() => {
     const video = ref.current!;
     let visible = false;
@@ -38,8 +39,8 @@ export default function ScenePlayback({ kind, zone }: { kind: FeatureKind; zone:
       playsInline
       preload="none"
       aria-hidden="true"
-      poster={playbackAsset(kind, 'webp')}
-      src={playbackAsset(clip, 'mp4')}
+      poster={playbackAsset(kind, 'webp', zone)}
+      src={clip}
     />
   );
 }

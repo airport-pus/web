@@ -44,6 +44,10 @@ export default function HomePage() {
         </HeroIntro>
         <FlightScroll className="flight-scroll" aria-label="집에서 함께 산들 앱으로 여행을 준비하는 두 사람">
           <div className="showcase flight-stage">
+            <picture className="hero-poster" aria-hidden="true">
+              <source media="(width < 800px)" srcSet="/assets/hero-mobile.webp" />
+              <img src="/assets/hero-desktop.webp" alt="" fetchPriority="high" />
+            </picture>
             <div id="scene" aria-hidden="true"></div>
           </div>
         </FlightScroll>

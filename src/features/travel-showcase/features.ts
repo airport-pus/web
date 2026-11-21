@@ -2,9 +2,7 @@ export const features = [
   {
     kind: 'flight',
     slot: 'flights',
-    label: 'KE1533 · 김해 → 제주',
-    value: '탑승구 5',
-    detail: '제주행 출발 시각 14:20',
+    label: '김해공항 출발 항공편 검색 예시',
     title: '내 항공편을 바로 찾아보세요.',
     description: '항공편 번호나 항공사, 도시로 검색하고 출발·도착 시각과 탑승구를 확인하세요.',
   },

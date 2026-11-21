@@ -1,6 +1,16 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const revealHero = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const riseHero = keyframes`
+  from { transform: translateY(22px); }
+  to { transform: translateY(0); }
+`;
 
 // :where로 선택자의 우선순위를 높이지 않고 이 컴포넌트 안에서만 적용한다.
 // 뒤쪽 선언과 미디어 쿼리가 앞쪽 스타일을 덮어쓰므로 순서를 유지한다.
@@ -418,5 +428,27 @@ export const FlightScroll = styled.section`
   :where(&) .flight-stage #scene {
     contain: paint;
     isolation: isolate;
+  }
+  .hero-poster {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .hero-poster img {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    max-width: none;
+    height: 100%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :where(&) .flight-stage {
+      animation: ${riseHero} 620ms cubic-bezier(.2,.7,.25,1);
+    }
+    :where(&) #scene > canvas {
+      animation: ${revealHero} 160ms ease-out backwards;
+    }
   }
 `;
