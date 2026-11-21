@@ -20,7 +20,7 @@ export function mountFeatureScenes(container: Document | HTMLElement = document,
   }
   host.addEventListener('webglcontextlost', fail, true);
   const card=host.closest('[data-story-card]');
-  const isActive=()=>visible&&!document.hidden&&(!card||card.getAttribute('aria-hidden')==='false');
+  const isActive=()=>visible&&host.dataset.playing !== 'false'&&!document.hidden&&(!card||card.getAttribute('aria-hidden')==='false');
   function sync(){
    if (unavailable) return;
    const active=isActive();

@@ -5,38 +5,57 @@ import ScenePlayback, { playbackAsset } from './ScenePlayback';
 import { Showcase } from './TravelShowcase.styles';
 export default function TravelShowcase() {
   const section = useRef<HTMLElement>(null);
-  const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null);
-  const crowdVisual = useRef<HTMLDivElement>(null);
-  const restartRotation = useRef<(() => void) | null>(null);
+  const [selected, setSelected] = useState<FeatureKind>('flight');
+  const [visible, setVisible] = useState<FeatureKind[]>([]);
+  const [restart, setRestart] = useState(0);
+  const active = visible.includes(selected) ? selected : visible[0];
   const [unavailable, setUnavailable] = useState<Record<string, boolean>>({});
   const [zone, setZone] = useState(0);
   const [minutes, setMinutes] = useState(90);
   const segment = gimhaeSegments[zone];
   useEffect(() => {
-    const visual = crowdVisual.current;
-    if (!visual) return;
-    let visible = false;
-    let timer: number | undefined;
-    function restart() {
-      window.clearInterval(timer);
-      if (visible && !document.hidden) {
-        timer = window.setInterval(() => setZone(current => (current + 1) % gimhaeSegments.length), 5000);
-      }
+    const cards = section.current!.querySelectorAll<HTMLElement>('[data-feature-scene]');
+    const intersecting = new Set<Element>();
+    function sync() {
+      setVisible(document.hidden ? [] : Array.from(cards)
+        .filter(card => intersecting.has(card))
+        .map(card => card.dataset.featureScene as FeatureKind));
     }
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.intersectionRatio >= 0.25;
-      restart();
-    }, { threshold: 0.25 });
-    observer.observe(visual);
-    restartRotation.current = restart;
-    document.addEventListener('visibilitychange', restart);
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) intersecting.add(entry.target);
+        else intersecting.delete(entry.target);
+      }
+      sync();
+    });
+    cards.forEach(card => observer.observe(card));
+    document.addEventListener('visibilitychange', sync);
     return () => {
-      restartRotation.current = null;
       observer.disconnect();
-      document.removeEventListener('visibilitychange', restart);
-      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', sync);
     };
   }, []);
+
+  useEffect(() => {
+    document.dispatchEvent(new Event('feature-activate'));
+    if (!active) return;
+    const duration = active === 'flight' ? 6000 : active === 'parking' ? 18000 : 5000;
+    const timer = window.setTimeout(() => {
+      if (active === 'crowd' && zone < gimhaeSegments.length - 1) {
+        setZone(zone + 1);
+        return;
+      }
+      if (active === 'crowd') setZone(0);
+      setSelected(visible[(visible.indexOf(active) + 1) % visible.length]);
+    }, duration);
+    return () => window.clearTimeout(timer);
+  }, [active, visible, restart, zone]);
+
+  function select(kind: FeatureKind) {
+    setSelected(kind);
+    setRestart(value => value + 1);
+  }
+
   useEffect(() => {
     let mounted = true;
     let dispose: (() => void) | undefined;
@@ -56,6 +75,7 @@ export default function TravelShowcase() {
     };
   }, []);
   function replayScene(kind: FeatureKind) {
+    select(kind);
     const video = section.current?.querySelector<HTMLVideoElement>(
       `[data-media-slot="${kind === 'flight' ? 'flights' : kind}"] video`,
     );
@@ -80,10 +100,10 @@ export default function TravelShowcase() {
         <p>
           공항 가기 전{' '}
           <span className="keyword-group" role="group" aria-label="산들 기능">
-            {['항공편', '혼잡도', '주차'].map(keyword => (
+            {['항공편', '혼잡도', '주차'].map((keyword, index) => (
               <button type="button" key={keyword}
-                aria-pressed={selectedKeyword === keyword}
-                onClick={() => setSelectedKeyword(current => current === keyword ? null : keyword)}>
+                aria-pressed={active === features[index].kind}
+                onClick={() => select(features[index].kind)}>
                 {keyword}
               </button>
             ))}
@@ -94,7 +114,7 @@ export default function TravelShowcase() {
       <div className="feature-grid">
         {features.map((feature) => (
           <article key={feature.slot}>
-            <div className="feature-visual" data-media-slot={feature.slot} ref={feature.kind === 'crowd' ? crowdVisual : undefined}>
+            <div className="feature-visual" data-media-slot={feature.slot}>
               <img
                 className="scene-fallback"
                 alt=""
@@ -104,12 +124,13 @@ export default function TravelShowcase() {
               <div
                 className="feature-model"
                 data-editorial="true"
+                data-playing={active === feature.kind}
                 data-zone={feature.slot === 'crowd' ? zone : undefined}
                 data-feature-scene={feature.kind}
                 role="img"
                 aria-label={feature.label}
               />
-              {unavailable[feature.kind] && <ScenePlayback kind={feature.kind} zone={zone} />}
+              {unavailable[feature.kind] && active === feature.kind && <ScenePlayback kind={feature.kind} zone={zone} />}
               {feature.slot === 'crowd' && (
                 <output className="scene-reading segment-reading">
                   <small>{zone + 1}구간</small>
@@ -139,7 +160,7 @@ export default function TravelShowcase() {
                     aria-pressed={zone === i}
                     onClick={() => {
                       setZone(i);
-                      restartRotation.current?.();
+                      select('crowd');
                     }}
                   >
                     {i + 1}구간
@@ -154,7 +175,7 @@ export default function TravelShowcase() {
                     type="button"
                     key={value}
                     aria-pressed={minutes === value}
-                    onClick={() => setMinutes(value)}
+                    onClick={() => { setMinutes(value); select('parking'); }}
                   >
                     {value}분
                   </button>
