@@ -11,12 +11,10 @@ export const features = [
   {
     kind: 'crowd',
     slot: 'crowd',
-    label: '보안검색장 혼잡도',
-    value: '2구간 혼잡',
-    detail: '1구간 여유　·　3구간 보통',
+    label: '수속 구간별 혼잡도',
     title: '공항에 가기 전에, 혼잡도부터.',
     description:
-      '구간별 혼잡 현황과 시간대별 승객 수를 살펴보세요. 기다릴 시간까지 생각하고 출발할 수 있어요.',
+      '체크인부터 비행기에 타기까지, 어느 구간이 붐비는지 출발 전에 확인하세요.',
   },
   {
     kind: 'parking',
@@ -30,3 +28,10 @@ export const features = [
 ] as const;
 
 export type FeatureKind = (typeof features)[number]['kind'];
+
+// 랜딩에서 구간 선택을 시연하기 위한 상태값이다.
+export const gimhaeSegments = [
+  { route: '체크인 → 신분확인', level: '원활' },
+  { route: '신분확인 → 보안검색', level: '혼잡' },
+  { route: '보안검색 → 항공기 탑승', level: '보통' },
+] as const;

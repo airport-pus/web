@@ -109,6 +109,21 @@ export const Showcase = styled.section`
     margin-left: 5px;
   }
 
+  .segment-reading {
+    display: grid;
+    gap: 3px;
+    border-radius: 14px;
+    padding: 9px 14px;
+    background: rgba(255,255,255,.96);
+    line-height: 1.4;
+  }
+  .segment-reading small { font-size: 12px; color: #53616c; }
+  .segment-reading span { font-weight: 600; color: #233749; }
+  .segment-reading b { display: inline-block; padding: 2px 7px; border-radius: 6px; font-size: 12px; }
+  .segment-reading [data-level='원활'] { background: #e3f4ed; color: #22624a; }
+  .segment-reading [data-level='보통'] { background: #edf1f5; color: #41596b; }
+  .segment-reading [data-level='혼잡'] { background: #fce9dc; color: #93431e; }
+
   article h3,
   article > p,
   .demo-choices,

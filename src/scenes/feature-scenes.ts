@@ -73,7 +73,7 @@ function build(host: HTMLElement){
  const shadow=mesh(scene,new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:kind === "flight" ? .018 : .1}),0,-.25,0);shadow.rotation.x=-Math.PI/2;shadow.castShadow=false;shadow.visible=kind!=="flight";
  // 바닥을 화면 밖까지 연장해 받침대 가장자리가 보이지 않게 한다.
  if(kind !== 'flight'){
-  const ground = mesh(scene,new THREE.PlaneGeometry(150,150),mat(kind === 'crowd' ? '#dedfdc' : '#9ba3ae'));
+  const ground = mesh(scene,new THREE.PlaneGeometry(150,150),mat(kind === 'crowd' ? '#e4edf0' : '#9ba3ae'));
   ground.rotation.x = -Math.PI/2;
   ground.castShadow = false;
   scene.fog = new THREE.FogExp2('#dae8ef', .037);
@@ -140,7 +140,6 @@ function build(host: HTMLElement){
    screen.needsUpdate=true;
   };
  }else if(kind==='crowd'){
-  const queues = [1, 6, 3];
   const cloth = (c: THREE.ColorRepresentation) => new THREE.MeshPhysicalMaterial({color:c,roughness:.8,sheen:.6,sheenColor:new THREE.Color('#ffffff'),sheenRoughness:.6});
   const shirts = ['#6487a0','#e1b39b','#bfc9b4','#9facc3'].map(cloth);
   const pants = ['#2c4a77','#55607a','#3d5f8c','#e9e4da'].map(cloth);
@@ -149,23 +148,9 @@ function build(host: HTMLElement){
   const faceParts = {eye:mat('#1d2433'),blush:mat('#f3aaa0'),mouth:mat('#b9655c')};
   const soleMat = mat('#f4f6fa');
   const blob = blobTexture();
-  // 보안검색대 뒤 유리벽으로 들어오는 자연광
-  for(let panel=-3; panel<=3; panel++){
-   box(root,2.45,3.6,.08,glass,panel*2.5,1.8,-3.7);
-   box(root,.05,3.6,.1,silver,panel*2.5-1.24,1.8,-3.65);
-  }
-  box(root,17.5,.055,.1,white,0,1.55,-3.62);
-  const belt = mat('#566b7a');
-  const posts = new THREE.Group(); root.add(posts);
-  for(const x of [-3,-1,1,3]){
-   for(const z of [-1.1,1.2,3.5]){
-    mesh(posts,lathe([[0,0],[.13,0],[.14,.02],[.1,.05],[.04,.07],[0,.07]],20),silver,x,0,z);
-    mesh(posts,new THREE.CylinderGeometry(.032,.032,.66,12),silver,x,.39,z);
-    mesh(posts,new THREE.SphereGeometry(.05,12,8),silver,x,.73,z).scale.y=.7;
-    if(z<3) mesh(posts,softBox(.03,.08,2.3,.5,.5,.2,12),belt,x,.66,z+1.15);
-   }
-  }
-  bake(posts);
+  const floorLine=mat('#cfdbdf');
+  for(let x=-12;x<=12;x+=2) box(root,.012,.006,10,floorLine,x,.007,0);
+  for(let z=-4;z<=4;z+=2) box(root,24,.006,.012,floorLine,0,.007,z);
   const luggageColors = [physical('#78add6'), physical('#d0a381'), physical('#6f9298')];
   // 여행객이 오른손으로 끄는 기내용 캐리어
   function addSuitcase(person: THREE.Object3D, x: number, z: number, shell: THREE.Material) {
@@ -194,26 +179,49 @@ function build(host: HTMLElement){
    sneaker((geo,m,a=0,b=0,c=0)=>mesh(g,geo,m,a,b,c),.12,upper,soleMat,0,0,0,.5);
    g.rotation.y = Math.PI; bake(g); return g;
   }
-  const travelers: {person: THREE.Group; row: number; lane: number; shoes: THREE.Group[]}[] = [];
-  const lights: THREE.MeshStandardMaterial[] = [];
-  const gates = new THREE.Group(); root.add(gates);
-  queues.forEach((count, lane) => {
-   const x = (lane - 1) * 2;
-   for(const side of [-.65,.65]) mesh(gates,softBox(.18,1.74,.48,.4,.12,.4,16),white,x+side,.87,-1.9);
-   mesh(gates,softBox(1.5,.24,.5,.15,.4,.4,16),white,x,1.72,-1.9);
-   for(const side of [-.57,.57]) mesh(gates,softBox(.03,1.5,.36,.5,.1,.4,12),silver,x+side,.85,-1.9);
-   const lamp = mat(['#73c59c','#ef9670','#e8c56f'][lane]);
-   lights.push(lamp);
-   const signal = mesh(root,softBox(.26,.07,.03,.4,.5,.5,16),lamp,x,1.7,-1.64);
-   signal.castShadow = false;
-   for (let row = 0; row < count; row++) {
-    const person = new THREE.Group();
-    root.add(person);
-    person.position.x = x;
+  const heads: THREE.Group[]=[];
+  const gestures: THREE.Group[]=[];
+  function monitor(x:number,y:number,z:number) {
+   box(root,.065,.2,.065,silver,x,y-.18,z);
+   box(root,.46,.3,.065,navy,x,y,z);
+   box(root,.37,.21,.012,glass,x,y,z+.038);
+  }
+  // 체크인 카운터, 수하물 저울과 출발장 신분확인 단말기
+  box(root,1.38,.72,.7,blue,-7.2,.37,-.57);
+  box(root,1.48,.07,.8,white,-7.2,.76,-.57);
+  monitor(-7.48,1.05,-.55);
+  box(root,.87,.17,.86,navy,-5.99,.09,-.57);
+  const bag=addSuitcase(root,-6.28,-.74,luggageColors[0]);bag.position.y+=.18;
+  box(root,.5,.85,.46,silver,-5.18,.43,.48);monitor(-5.18,1.07,.51);
+  // 트레이 투입구와 사람용 검색대를 분리한다.
+  box(root,2.8,.61,.85,silver,.28,.31,-.61);
+  box(root,2.9,.09,.9,navy,.28,.66,-.61);
+  for(let x=-1.08;x<1.69;x+=.15) box(root,.029,.022,.79,silver,x,.72,-.61);
+  for(const z of [-1.05,-.17]) box(root,1.1,.79,.12,blue,1.08,1.12,z);
+  box(root,1.16,.14,1,blue,1.08,1.57,-.61);
+  for(let z=-.96;z<-.2;z+=.1) box(root,.045,.59,.09,navy,.56,1.2,z);
+  const tray=new THREE.Group(); root.add(tray);tray.position.set(-.63,.75,-.61);
+  box(tray,.56,.045,.46,white,0,0,0);
+  for(const x of [-.27,.27]) box(tray,.04,.09,.46,white,x,.05,0);
+  for(const z of [-.21,.21]) box(tray,.56,.09,.04,white,0,.05,z);
+  box(tray,.31,.15,.19,luggageColors[1],0,.095,0);
+  for(const x of [1.05,1.97]) box(root,.13,1.68,.3,white,x,.85,.81);
+  box(root,1.05,.15,.32,white,1.51,1.75,.81);
+  // 탑승 대기석과 탑승권 스캐너
+  for(const x of [5,5.52,6.04]){
+   box(root,.47,.12,.5,navy,x,.42,-1.22);
+   box(root,.47,.42,.09,navy,x,.64,-1.47);
+   box(root,.08,.38,.13,silver,x,.19,-1.25);
+  }
+  box(root,.53,.8,.49,blue,6.75,.41,-.42);
+  box(root,.41,.055,.36,navy,6.75,.84,-.41);
+  const scanner=mat('#78baab');
+  box(root,.26,.022,.2,scanner,6.75,.88,-.4);
+  function makeTraveler(x:number,depth:number,heading:number,lane:number,row:number,task:'wait'|'scan'|'staff'){
+    const person=new THREE.Group();root.add(person);person.position.set(x,0,depth);person.rotation.y=heading;
     const z = 0, i = lane * 2 + row;
     const shirt = shirts[(row+lane)%shirts.length], skin = skins[i%skins.length], hair = hairs[(i+1)%hairs.length], trousers = pants[(row+2*lane)%pants.length];
-    const shoes = [-.085,.085].map(dx => shoe(person, dx, i%2 ? navy : white));
-    travelers.push({person,row,lane,shoes});
+    for(const dx of [-.085,.085]) shoe(person,dx,i%2 ? navy : white);
     // 몸은 +z 방향으로 만든 다음 검색대가 있는 -z 방향으로 돌린다.
     const fig = new THREE.Group(); fig.rotation.y = Math.PI;
     const f = (geo: THREE.BufferGeometry,m: THREE.Material,a=0,b=0,c=0) => mesh(fig,geo,m,a,b,c);
@@ -221,7 +229,15 @@ function build(host: HTMLElement){
     const torso = f(lathe([[0,0],[.17,0],[.2,.05],[.21,.2],[.2,.34],[.15,.43],[.07,.47],[0,.47]],16),shirt,0,.38,0);
     torso.scale.z = .78;
     for (const s of [-1,1]) {
-     const pulling = s < 0 && (lane + row) % 3 !== 1;
+     if(task==='scan' && s===1){
+      const arm=new THREE.Group();fig.add(arm);arm.position.set(.18,.76,0);
+      const part=(geo:THREE.BufferGeometry,m:THREE.Material,a=0,b=0,c=0)=>mesh(arm,geo,m,a,b,c);
+      part(tube([[0,0,0],[.06,-.1,.15],[.05,.01,.34]],.052,{r2:.042,seg:8,radial:8}),shirt);
+      mitten(part,.046,skin,.05,.01,.35,1,.5);
+      if(lane!==1) box(arm,.16,.014,.11,white,.05,.01,.405);
+      bake(arm);gestures.push(arm);continue;
+     }
+     const pulling = task==='wait' && s < 0 && (lane + row) % 3 !== 1;
      const hand: THREE.Vector3Tuple = pulling ? [-.34,.76,-.09] : [s*.25,.46,.05];
      const elbow: THREE.Vector3Tuple = pulling ? [-.31,.66,-.03] : [s*.25,.58,.02];
      f(tube([[s*.19,.78,0],elbow,hand],.055,{r2:.048,seg:8,radial:8}),shirt);
@@ -229,34 +245,35 @@ function build(host: HTMLElement){
     }
     const head = new THREE.Group(); head.position.set(0,1.06,0); fig.add(head);
     cuteHead((geo,m,a=0,b=0,c=0)=>mesh(head,geo,m,a,b,c),.2,{skin,hair,...faceParts},i%4,.55);
-    bake(head);
+    bake(head); heads.push(head);
     person.add(fig);
     contactShadow(person,blob,.75,.75,{y:.004,opacity:.22});
     const shell = luggageColors[(lane + row) % luggageColors.length];
-    if ((lane + row) % 3 === 1) addBackpack(person,0,z,shell);
-    else addSuitcase(person,0,z,shell);
+    if(task==='wait'){
+     if ((lane + row) % 3 === 1) addBackpack(person,0,z,shell);
+     else addSuitcase(person,0,z,shell);
+    }
     bake(fig); bake(person);
-   }
-  });
-  bake(gates);
-  animate = time => {
-   const selected = Number(host.dataset.zone ?? 1);
-   lights.forEach((lamp,lane) => {
-    lamp.emissive.copy(lamp.color);
-    lamp.emissiveIntensity = lane === selected ? .85 : .08;
-   });
-   for(const {person,row,lane,shoes} of travelers){
-    const cycle = (time + (lane === selected ? 0 : 3) + (6-row)*.32) % 9;
-    const stride = THREE.MathUtils.smoothstep(cycle, 1, 3.4);
-    const settle = THREE.MathUtils.smoothstep(cycle, 5, 8.6);
-    const shift = stride - settle;
-    person.position.z = -.85 + row * .85 - .44 * shift;
-    const step = Math.sin(stride * Math.PI * 4) - Math.sin(settle * Math.PI * 4);
-    shoes[0].position.z = -.035 + .085 * step;
-    shoes[1].position.z = -.035 - .085 * step;
-    person.position.y = .024 * Math.abs(step);
-    person.rotation.y = .12 * Math.sin(cycle / 9 * Math.PI * 2);
-   }
+  }
+  makeTraveler(-7.15,.06,0,0,0,'scan');makeTraveler(-7.35,-1.23,Math.PI,0,2,'staff');
+  makeTraveler(-5.12,1.03,0,0,1,'scan');
+  makeTraveler(-.72,-.04,0,1,0,'scan');makeTraveler(.14,-1.3,Math.PI,1,3,'staff');
+  makeTraveler(-.91,.75,.02,1,2,'wait');makeTraveler(-.94,1.53,.01,1,1,'wait');
+  makeTraveler(-.45,2.11,.68,1,4,'wait');makeTraveler(.29,2.15,Math.PI/2,1,3,'wait');
+  makeTraveler(.99,2.12,Math.PI/2,1,5,'wait');
+  makeTraveler(6.76,.09,0,2,1,'scan');makeTraveler(6.9,-1.02,Math.PI,2,3,'staff');
+  makeTraveler(6.25,.95,-.45,2,0,'wait');makeTraveler(5.47,1.15,-1.05,2,2,'wait');
+  let lastTime: number | undefined;
+  animate=time=>{
+   const desiredX=(1-Number(host.dataset.zone ?? 1))*6.45;
+   root.position.x=lastTime===undefined ? desiredX :
+    THREE.MathUtils.lerp(root.position.x,desiredX,1-Math.exp(-7*Math.max(0,time-lastTime)));
+   lastTime=time;
+   heads.forEach((head,i)=>{head.rotation.y=.14*Math.sin(time*Math.PI/3+i);});
+   gestures.forEach((arm,i)=>{arm.rotation.x=.12+.27*Math.cos(time*Math.PI/2+i);});
+   scanner.emissive.set('#448e6b');scanner.emissiveIntensity=.35+.3*Math.cos(time*Math.PI/2);
+   // 승객은 대기 위치를 유지하고 트레이만 검색기 안으로 전진한다.
+   tray.position.x=-.63+1.77*THREE.MathUtils.smoothstep(time%6,1.4,4.8);
   };
  }else{
   const paint = mat('#e9e9df');
@@ -292,19 +309,41 @@ function build(host: HTMLElement){
   ));
   path.add(new THREE.LineCurve3(new THREE.Vector3(1,0,1.5), new THREE.Vector3(1,0,2.7)));
 
+  const reverseRadius = 1.7;
+  const straightBack = 2.7 - reverseRadius;
+  const reverseLength = straightBack + Math.PI / 2 * reverseRadius;
+  const aisleX = 1 - reverseRadius;
+
   animate = time => {
    const cycle = time % 18;
-   const progress = THREE.MathUtils.smoothstep(cycle,0,5.5)
-    - THREE.MathUtils.smoothstep(cycle,11,17.5);
-   const direction = path.getTangentAt(progress);
-   arriving.position.copy(path.getPointAt(progress));
-   arriving.rotation.y = Math.atan2(direction.x,direction.z);
-   host.classList.toggle('parked', progress === 1);
+   arriving.visible = cycle < 17.5;
+   host.classList.toggle('parked', cycle >= 5.5 && cycle < 8.5);
+
+   if (cycle < 8.5) {
+    const progress = THREE.MathUtils.smoothstep(cycle, 0, 5.5);
+    const tangent = path.getTangentAt(progress);
+    arriving.position.copy(path.getPointAt(progress));
+    arriving.rotation.y = Math.atan2(tangent.x, tangent.z);
+   } else if (cycle < 12.8) {
+    // 차 뒤가 주차 칸을 벗어나면 오른쪽으로 조향하며 통로까지 후진한다.
+    const distance = reverseLength * THREE.MathUtils.smoothstep(cycle, 8.5, 12.8);
+    const angle = Math.max(0, distance - straightBack) / reverseRadius;
+    arriving.position.set(
+     1 - reverseRadius * (1 - Math.cos(angle)), 0,
+     2.7 - Math.min(distance, straightBack) - reverseRadius * Math.sin(angle)
+    );
+    arriving.rotation.y = angle;
+   } else {
+    // 통로에 정렬한 뒤 잠시 멈추고 원래 출구로 전진한다.
+    const progress = THREE.MathUtils.smoothstep(cycle, 13.2, 17.5);
+    arriving.position.set(THREE.MathUtils.lerp(aisleX, 10, progress), 0, 0);
+    arriving.rotation.y = Math.PI / 2;
+   }
   };
  }
  const framing = {
   flight: { position: [0, 0, 10.8], target: [0, 0, 0] },
-  crowd: { position: [5.1, 4.8, 8.8], target: [0, .85, .65] },
+  crowd: { position: [-2.1, 4.1, 6.7], target: [0, .54, .45] },
   parking: { position: [8, 11, 13], target: [0, 0, 0] },
  }[kind];
  const target = new THREE.Vector3(...framing.target);

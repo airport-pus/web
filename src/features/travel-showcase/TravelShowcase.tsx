@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { features, type FeatureKind } from './features';
+import { features, gimhaeSegments, type FeatureKind } from './features';
 import ScenePlayback, { playbackAsset } from './ScenePlayback';
 import { Showcase } from './TravelShowcase.styles';
 export default function TravelShowcase() {
@@ -8,7 +8,7 @@ export default function TravelShowcase() {
   const [unavailable, setUnavailable] = useState<Record<string, boolean>>({});
   const [zone, setZone] = useState(1);
   const [minutes, setMinutes] = useState(90);
-  const congestion = ['여유', '혼잡', '보통'];
+  const segment = gimhaeSegments[zone];
   useEffect(() => {
     let mounted = true;
     let dispose: (() => void) | undefined;
@@ -77,8 +77,9 @@ export default function TravelShowcase() {
               />
               {unavailable[feature.kind] && <ScenePlayback kind={feature.kind} zone={zone} />}
               {feature.slot === 'crowd' && (
-                <output className="scene-reading">
-                  보안검색 {zone + 1}구간 <b>{congestion[zone]}</b>
+                <output className="scene-reading segment-reading">
+                  <small>{zone + 1}구간</small>
+                  <span>{segment.route} <b data-level={segment.level}>{segment.level}</b></span>
                 </output>
               )}
               {feature.slot === 'parking' && (
@@ -95,16 +96,14 @@ export default function TravelShowcase() {
               </button>
             )}
             {feature.slot === 'crowd' && (
-              <div className="demo-choices" role="group" aria-label="보안검색 구간">
-                {congestion.map((state, i) => (
+              <div className="demo-choices" role="group" aria-label="국내선 수속 구간">
+                {gimhaeSegments.map(({ route }, i) => (
                   <button
                     type="button"
-                    key={state}
+                    key={route}
+                    aria-label={`${i + 1}구간 · ${route}`}
                     aria-pressed={zone === i}
-                    onClick={() => {
-                      setZone(i);
-                      replayScene('crowd');
-                    }}
+                    onClick={() => setZone(i)}
                   >
                     {i + 1}구간
                   </button>
