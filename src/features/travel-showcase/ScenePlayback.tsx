@@ -1,0 +1,45 @@
+'use client';
+import { useEffect, useRef } from 'react';
+import type { FeatureKind } from './features';
+export function playbackAsset(name: string, format: 'webp' | 'mp4') {
+  return `/assets/feature-playback/${name}.${format}?v=2`;
+}
+
+export default function ScenePlayback({ kind, zone }: { kind: FeatureKind; zone: number }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const clip = kind === 'crowd' && zone !== 1 ? `crowd-${zone + 1}` : kind;
+  useEffect(() => {
+    const video = ref.current!;
+    let visible = false;
+    function sync() {
+      if (visible && !document.hidden)
+        video.play().catch(() => {
+          video.controls = true;
+        });
+      else video.pause();
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      sync();
+    });
+    observer.observe(video);
+    document.addEventListener('visibilitychange', sync);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', sync);
+      video.pause();
+    };
+  }, [clip]);
+  return (
+    <video
+      ref={ref}
+      muted
+      loop
+      playsInline
+      preload="none"
+      aria-hidden="true"
+      poster={playbackAsset(kind, 'webp')}
+      src={playbackAsset(clip, 'mp4')}
+    />
+  );
+}

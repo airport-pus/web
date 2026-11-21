@@ -6,7 +6,7 @@ export default function StoryScene({ kind, label }: {kind: string; label: string
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let cancelled = false, dispose: (() => void) | undefined;
-    Promise.all([import('../src/product-scenes'), document.fonts.ready]).then(([{ mountProductScene }]) => {
+    Promise.all([import('../src/scenes/product-scenes'), document.fonts.ready]).then(([{ mountProductScene }]) => {
       if (cancelled || !host.current) return;
       try { dispose = mountProductScene(host.current, kind); }
       catch { setFailed(true); }
