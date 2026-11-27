@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import PhoneMockup from './PhoneMockup';
+import { landingTitle } from '../src/styles/hero';
 
 const steps = [
   { label: '운항정보', description: '내 항공편을 찾아 출발 시각과 탑승구를 확인하세요. 일정이 바뀌면 변경된 시각도 함께 볼 수 있어요.' },
@@ -15,13 +16,21 @@ const steps = [
 const Story = styled.section`
   position: relative;
   height: 250svh;
+  overflow-x: clip;
+  background: linear-gradient(
+    to bottom,
+    #fff,
+    #fcfcfd 22svh,
+    #fcfcfd calc(100% - 22svh),
+    #fff
+  );
 
   .stage {
     position: sticky;
     top: 60px;
     height: calc(100svh - 60px);
     box-sizing: border-box;
-    width: min(1120px, 90%);
+    width: min(1200px, 90%);
     margin-inline: auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -30,10 +39,10 @@ const Story = styled.section`
   }
   .copy { min-width: 0; }
   h2 {
+    ${landingTitle}
     margin: 0 0 clamp(20px, 5svh, 56px);
-    font-size: clamp(32px, min(4.2vw, 6.4svh), 62px);
-    line-height: 1.2;
-    letter-spacing: -.05em;
+    font-size: clamp(36px, min(5.1vw, 8svh), 76px);
+    line-height: 1.35;
     word-break: keep-all;
   }
   .step { border-top: 1px solid #e5e8ec; }
@@ -45,8 +54,10 @@ const Story = styled.section`
     background: transparent;
     text-align: left;
     font: inherit;
-    font-size: clamp(16px, 1.65vw, 23px);
+    font-size: clamp(18px, 1.95vw, 28px);
     font-weight: 650;
+    line-height: 1.4;
+    letter-spacing: -.02em;
     color: #89919b;
     cursor: pointer;
   }
@@ -59,8 +70,9 @@ const Story = styled.section`
     margin: 0;
     padding-bottom: 1em;
     color: #515c69;
-    font-size: clamp(14px, 1.3vw, 18px);
-    line-height: 1.55;
+    font-size: clamp(15px, 1.45vw, 20px);
+    line-height: 1.65;
+    letter-spacing: -.015em;
     word-break: keep-all;
   }
   .stage[data-animated] .detail { height: calc(var(--detail-height) * var(--open)); }
@@ -86,14 +98,31 @@ const Story = styled.section`
     to { opacity: 1; transform: translateY(0); }
   }
   .device {
-    width: min(100%, 354px, 39svh);
+    width: min(84%, 400px, 41svh);
     justify-self: center;
+    position: relative;
+    isolation: isolate;
   }
-  .device > div { width: 100%; margin: 0; }
+  .device::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    inset: 30% max(-15vw, -220px) -14% -52%;
+    background:
+      radial-gradient(ellipse at 64% 58%, rgb(113 188 239 / 13%), transparent 66%),
+      radial-gradient(ellipse at 46% 73%, rgb(192 225 247 / 16%), transparent 60%);
+    filter: blur(18px);
+  }
+  .device > div {
+    width: 100%;
+    margin: 0;
+  }
   @media (max-width: 650px) {
     .stage { width: 92%; gap: 4vw; grid-template-columns: 1.35fr 1fr; }
-    h2 { font-size: clamp(23px, 5.6vw, 34px); }
+    h2 { font-size: clamp(26px, 6.6vw, 40px); }
     .step button { padding-block: 10px; }
+    .device::before { right: -10vw; }
   }
   @media (max-height: 580px) {
     h2 { font-size: 24px; margin-bottom: 8px; }

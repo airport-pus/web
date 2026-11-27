@@ -40,7 +40,7 @@ const Screen = styled.div`
   box-sizing: border-box;
   height: 100%;
   overflow: hidden;
-  border: 7px solid #151516;
+  border: 8px solid #151516;
   border-radius: inherit;
   background: white;
 
