@@ -32,10 +32,10 @@ export default function JourneyHero() {
       if (!section.current || !stage.current) return;
       const distance = Math.max(1, section.current.offsetHeight - stage.current.offsetHeight);
       const target = Math.max(0, Math.min(1, -section.current.getBoundingClientRect().top / distance));
-      progress = reduced.matches ? target : progress + (target - progress) * .09;
+      progress = progress + (target - progress) * .075;
       if (Math.abs(target - progress) < .0005) progress = target;
       stage.current.style.setProperty('--journey-progress', String(progress));
-      stage.current.style.setProperty('--expand', String(Math.min(1, progress / .6)));
+      stage.current.style.setProperty('--expand', String(Math.min(1, progress / .392)));
       stage.current.style.setProperty('--title-opacity', String(Math.max(0, 1 - progress * 4)));
       if (progress !== target) frame = requestAnimationFrame(render);
     }

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { tube, lathe, cuteHead, sneaker, mitten, bake } from './toy-kit';
 
 // 앉아 있는 여행객의 자세는 휴대폰을 든 'phone'과 손을 무릎에 둔 'lap'으로 나뉜다.
-// 시선을 움직일 수 있도록 머리 그룹을 반환한다.
+// 머리, 상체, 팔을 분리해 발은 고정한 채 자연스럽게 움직인다.
 export function buildTraveler(traveler: THREE.Group, { mesh }: {mesh: (parent: THREE.Object3D, ...args: Parameters<AddMesh>) => THREE.Mesh}, c: FaceMaterials & Record<'shirt' | 'trousers' | 'white' | 'sole', THREE.Material>, { pose = 'phone', hairStyle = 0, shoe }: {pose?: 'phone' | 'lap'; hairStyle?: number; shoe?: {upper: THREE.Material; sole: THREE.Material}} = {}) {
  const add: AddMesh = (geo, m, x = 0, y = 0, z = 0) => mesh(traveler, geo, m, x, y, z);
  // 회전체로 만든 상체를 앞뒤로 눌러 어깨와 가슴의 형태를 잡는다.
@@ -20,12 +20,15 @@ export function buildTraveler(traveler: THREE.Group, { mesh }: {mesh: (parent: T
  const arms: [number, THREE.Vector3Tuple, THREE.Vector3Tuple, THREE.Vector3Tuple, THREE.Vector3Tuple][] = pose === 'phone'
   ? [[-1, [-.5, 2.36, .02], [-.68, 1.86, .62], [-.31, 2.04, 1.3], [-.26, 2.09, 1.42]], [1, [.5, 2.36, .02], [.62, 1.88, .7], [.34, 2.12, 1.38], [.3, 2.16, 1.5]]]
   : [[-1, [-.5, 2.36, .02], [-.62, 1.72, .32], [-.38, 1.47, .86], [-.32, 1.43, .97]], [1, [.5, 2.36, .02], [.62, 1.72, .32], [.38, 1.47, .86], [.32, 1.43, .97]]];
+ const gesture = new THREE.Group();
+ gesture.position.set(0, 2.36, .02); traveler.add(gesture);
+ const addArm: AddMesh = (geo, material, x = 0, y = 0, z = 0) => mesh(gesture, geo, material, x, y - 2.36, z - .02);
  for (const [side, shoulder, elbow, wrist, hand] of arms) {
-  add(tube([shoulder, elbow, wrist], .17, { r2: .125, seg: 12, radial: 10 }), c.shirt);
-  mitten(add, .12, c.skin, ...hand, side, .7);
+  addArm(tube([shoulder, elbow, wrist], .17, { r2: .125, seg: 12, radial: 10 }), c.shirt);
+  mitten(addArm, .12, c.skin, ...hand, side, .7);
  }
  const head = new THREE.Group(); head.position.set(0, 3.17, .14); head.rotation.x = .23; traveler.add(head);
  cuteHead((geo, m, x = 0, y = 0, z = 0) => mesh(head, geo, m, x, y, z), .5, c, hairStyle, .7);
- bake(head); bake(traveler);
- return head;
+ bake(head); bake(gesture); bake(traveler, [torso]);
+ return { head, torso, gesture };
 }

@@ -1,3 +1,4 @@
+import { buildPackingCase } from './packing-case';
 import * as THREE from 'three';
 import { buildTraveler } from './traveler';
 import { addMesh, createMaterial, roundedShape } from './scene-primitives';
@@ -198,7 +199,7 @@ function addTravelers(
   const traveler = new THREE.Group();
   home.add(traveler);
   traveler.position.set(-1.8, 0, 0);
-  const head = buildTraveler(
+  const holder = buildTraveler(
     traveler,
     { mesh: addMesh },
     { ...face, shirt, trousers },
@@ -225,7 +226,7 @@ function addTravelers(
   home.add(companion);
   companion.position.set(-0.15, 0, 0.12);
   companion.rotation.y = -0.28;
-  const companionHead = buildTraveler(
+  const partner = buildTraveler(
     companion,
     { mesh: addMesh },
     {
@@ -236,57 +237,30 @@ function addTravelers(
     },
     { pose: 'lap', hairStyle: 2, shoe: { upper: createMaterial('#2c4a77', 0, 0.6), sole: soft } },
   );
+  const companionHead = partner.head;
   companionHead.position.x = -0.2;
   companionHead.rotation.set(0.32, -0.4, 0.2);
   contactShadow(home, blob, 1.3, 1.1, { x: -2.15, y: -0.1, z: 1.85, opacity: 0.25 });
   contactShadow(home, blob, 1.3, 1.1, { x: -0.4, y: -0.1, z: 1.95, opacity: 0.25 });
-  return head;
-}
-
-function addSuitcase(home: THREE.Group, { navy, dark, silver }: HomeMaterials, blob: THREE.Texture) {
-  // 캐리어의 외피, 지퍼, 바퀴와 손잡이
-  const suitcase = new THREE.Group();
-  home.add(suitcase);
-  suitcase.position.set(3.1, 0, 0.25);
-  suitcase.rotation.y = -0.2;
-  const shell = new THREE.MeshPhysicalMaterial({
-    color: '#3182f6',
-    roughness: 0.32,
-    metalness: 0.05,
-    clearcoat: 1,
-    clearcoatRoughness: 0.18,
-  });
-  addMesh(suitcase, softBox(1.45, 2.05, 0.8, 0.2, 0.2, 0.42, 20), shell, 0, 1.2, 0);
-  addMesh(
-    suitcase,
-    softBox(1.49, 2.09, 0.05, 0.2, 0.2, 0.5, 16),
-    createMaterial('#1f4f9e', 0, 0.5),
-    0,
-    1.2,
-    -0.06,
-  );
-  const rib = new THREE.MeshPhysicalMaterial({
-    color: '#5d9bf8',
-    roughness: 0.3,
-    clearcoat: 1,
-    clearcoatRoughness: 0.2,
-  });
-  for (let i = 0; i < 4; i++)
-    addMesh(suitcase, softBox(0.1, 1.62, 0.08, 0.5, 0.12, 0.5, 10), rib, -0.39 + i * 0.26, 1.2, 0.37);
-  for (const x of [-0.52, 0.52])
-    for (const z of [-0.24, 0.24]) {
-      addMesh(suitcase, softBox(0.16, 0.14, 0.16, 0.4, 0.4, 0.4, 10), navy, x, 0.15, z);
-      const w = addMesh(suitcase, new THREE.CylinderGeometry(0.075, 0.075, 0.07, 16), dark, x, 0.02, z);
-      w.rotation.z = Math.PI / 2;
-    }
-  for (const x of [-0.38, 0.38]) {
-    addMesh(suitcase, new THREE.CylinderGeometry(0.045, 0.045, 0.4, 12), silver, x, 2.38, -0.24);
-    addMesh(suitcase, new THREE.CylinderGeometry(0.032, 0.032, 0.5, 12), silver, x, 2.78, -0.24);
-  }
-  addMesh(suitcase, softBox(0.92, 0.13, 0.17, 0.3, 0.5, 0.5, 14), navy, 0, 3.04, -0.24);
-  addMesh(suitcase, new THREE.TorusGeometry(0.2, 0.045, 10, 20, Math.PI), navy, 0, 2.2, 0.06);
-  bake(suitcase);
-  contactShadow(home, blob, 2.1, 1.6, { x: 3.1, y: -0.1, z: 0.25, opacity: 0.32, rot: -0.2 });
+  // 같은 팔 그룹에 휴대폰을 연결해 손에서 떨어지지 않게 한다.
+  home.updateMatrixWorld(true);
+  holder.gesture.attach(homePhone);
+  const ease = (t: number) => { const v = THREE.MathUtils.clamp(t, 0, 1); return v * v * (3 - 2 * v); };
+  const animate = (seconds: number, scroll: number) => {
+    const t = seconds % 12;
+    const show = ease((t - 1) / 2.2) * (1 - ease((t - 8) / 2.5));
+    const follow = ease((t - 2) / 2) * (1 - ease((t - 8.5) / 2.5));
+    const nod = t > 4 && t < 6 ? Math.sin((t - 4) * Math.PI / 2) ** 2 : 0;
+    const breath = Math.sin(seconds * Math.PI / 2) * .006;
+    holder.gesture.rotation.set(-.075 * show, .11 * show, 0);
+    holder.head.rotation.set(.23 + scroll * .06 - .035 * show, .09 * show, 0);
+    holder.head.position.y = 3.17 + breath;
+    holder.torso.scale.y = 1 + breath;
+    partner.head.rotation.set(.32 + .09 * nod, -.4 - .12 * follow, .2 - .035 * follow);
+    partner.head.position.y = 3.17 - breath;
+    partner.torso.scale.y = 1 - breath;
+  };
+  return { travelerHead: holder.head, animate };
 }
 
 function addTable(home: THREE.Group, { soft, oak, blue }: HomeMaterials, blob: THREE.Texture) {
@@ -427,9 +401,9 @@ export function buildHomeScene(shared: SharedMaterials, phone: CreatePhone) {
   addRoom(room, materials);
   addRug(room);
   addSofa(room, materials, shadowTexture);
-  const travelerHead = addTravelers(room, materials, shadowTexture, phone);
-  addSuitcase(room, materials, shadowTexture);
+  const { travelerHead, animate } = addTravelers(room, materials, shadowTexture, phone);
+  const packingCase = buildPackingCase(room);
   addTable(room, materials, shadowTexture);
   addLamp(room, materials, shadowTexture);
-  return { room, travelerHead };
+  return { room, travelerHead, animate, updatePacking: packingCase.update };
 }

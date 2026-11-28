@@ -1,4 +1,5 @@
-import { buildHomeScene } from './home-scene';
+import { buildAirliner } from './airliner';
+import { buildTerminalFilm } from './terminal-film';
 import { createMaterial as mat, addMesh as mesh, roundedShape } from './scene-primitives';
 import { disposeScene } from './dispose-scene';
 type CanvasLine = {
@@ -192,79 +193,7 @@ export function createExperience(container: HTMLElement) {
     return m;
   }
   function airplane() {
-    const g = new THREE.Group();
-    const body = cylinder(g, 0.62, 0.62, 7.4, white, 0, 0, 0);
-    body.rotation.x = Math.PI / 2;
-    const nose = sphere(g, 0.63, white, 0, 0, 3.7);
-    nose.scale.set(1, 1, 1.8);
-    const tail = sphere(g, 0.62, white, 0, 0, -3.7);
-    tail.scale.set(0.95, 0.95, 1.8);
-    for (const side of [-1, 1]) {
-      wing(
-        g,
-        [
-          [side * 0.25, 1.3],
-          [side * 5.5, -1.5],
-          [side * 5.7, -2],
-          [side * 1.1, -1.55],
-          [side * 0.25, -0.65],
-        ],
-        0.13,
-        white,
-        -0.1,
-      );
-      wing(
-        g,
-        [
-          [side * 0.2, -2.9],
-          [side * 2.25, -4.15],
-          [side * 2.3, -4.55],
-          [side * 0.3, -4.1],
-        ],
-        0.1,
-        white,
-        0.15,
-      );
-      const tip = box(g, 0.12, 0.62, 0.65, blue, side * 5.55, 0.18, -1.76, 0.05);
-      tip.rotation.z = -side * 0.3;
-      const engine = cylinder(g, 0.4, 0.46, 1.5, white, side * 2, -0.65, -0.2);
-      engine.rotation.x = Math.PI / 2;
-      const intake = cylinder(g, 0.32, 0.32, 0.05, dark, side * 2, -0.65, 0.57);
-      intake.rotation.x = Math.PI / 2;
-      const hub = sphere(g, 0.13, silver, side * 2, -0.65, 0.61);
-      for (let j = 0; j < 13; j++) {
-        const p = sphere(g, 0.062, navy, side * 0.59, 0.2, 2.5 - j * 0.43);
-        p.scale.set(0.24, 1, 1.35);
-      }
-      box(g, 0.025, 0.58, 0.3, silver, side * 0.62, -0.01, 2.85, 0.02);
-      for (let j = 0; j < 2; j++) {
-        const wheel = cylinder(g, 0.17, 0.17, 0.14, dark, side * 0.65, -0.88, -1 + j * 0.37);
-        wheel.rotation.z = Math.PI / 2;
-      }
-    }
-    const finShape = new THREE.Shape();
-    finShape.moveTo(0, 0);
-    finShape.lineTo(0, 1.9);
-    finShape.lineTo(1.7, 0.1);
-    finShape.closePath();
-    const fin = mesh(
-      g,
-      new THREE.ExtrudeGeometry(finShape, {
-        depth: 0.13,
-        bevelEnabled: true,
-        bevelSize: 0.04,
-        bevelThickness: 0.04,
-        bevelSegments: 2,
-      }),
-      blue,
-      -0.065,
-      0.35,
-      -4.1,
-    );
-    fin.rotation.y = Math.PI / 2;
-    const cockpit = box(g, 0.83, 0.23, 0.5, navy, 0, 0.43, 3.45, 0.1);
-    cockpit.rotation.x = -0.25;
-    return g;
+    return buildAirliner({ white, blue, navy, silver, dark });
   }
   function terminal(g: THREE.Object3D) {
     box(g, 11, 1.6, 3.2, glass, 1, 0.75, -6);
@@ -610,7 +539,8 @@ export function createExperience(container: HTMLElement) {
     renderer.render(scene, camera);
   }
   let flightMode = true,
-    flightProgress = 0;
+    flightProgress = 0,
+    flightTime = 0;
   const skyClouds = new THREE.Group();
   scene.add(skyClouds);
   for (let i = 0; i < 7; i++) {
@@ -623,26 +553,22 @@ export function createExperience(container: HTMLElement) {
     skyClouds.add(cloud);
   }
   skyClouds.visible = false;
-  const { room: home, travelerHead: head } = buildHomeScene({ blue, navy, silver, dark }, phone);
-  scene.add(home);
-  function updateFlight(progress: number, mobile = false) {
+  const terminalFilm=buildTerminalFilm(airplane);
+  scene.add(terminalFilm.world);
+  function updateFlight(progress: number, mobile = false, seconds = flightTime) {
     flightMode = true;
     flightProgress = progress;
+    flightTime = seconds;
     lastMobile = mobile;
-    const p = smooth(clamp(progress));
     groups.forEach((g) => (g.visible = false));
     skyClouds.visible = false;
-    home.visible = true;
-    // 여행객과 짐이 화면에 남도록 휴대폰 쪽으로 천천히 다가간다.
-    const focus = new THREE.Vector3(-0.2 - p * 0.4, 1.6 + p * 0.35, 0.35 + p * 0.5);
-    const offset = new THREE.Vector3(7.65 - p * 3.65, 5.95 - p * 1.65, 11.05 - p * 2.85);
-    if (mobile) offset.multiplyScalar(1.4);
-    camera.position.copy(focus).add(offset);
-    camera.lookAt(focus);
-    head.rotation.x = 0.23 + p * 0.06;
+    terminalFilm.world.visible = true;
+    terminalFilm.update(progress,seconds,camera,mobile);
     background.set('#5386b9');
-    sun.position.set(8, 15, 12);
-    sun.target.position.set(-1, 1, 0);
+    // 카메라가 주차장으로 이동해도 동일한 방향의 햇빛과 접지 그림자를 유지한다.
+    const lightingFocus=terminalFilm.lightTarget;
+    sun.position.set(lightingFocus.x+8,18,lightingFocus.z+12);
+    sun.target.position.set(lightingFocus.x,0,lightingFocus.z);
     renderer.render(scene, camera);
   }
   function renderLast() {

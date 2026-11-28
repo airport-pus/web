@@ -16,7 +16,7 @@ const revealScene = keyframes`
 `;
 
 export const JourneyHeroLayout = styled.section`
-  height:220svh; position:relative; background:#fff;
+  height:360svh; position:relative; background:#fff;
   .journey-stage { position:sticky; top:0; height:100svh; overflow:hidden; isolation:isolate; --expand:0; --aperture:0; --product:0; --screen:0; --title-opacity:1; }
   .journey-stage::before {
     content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
@@ -35,14 +35,14 @@ export const JourneyHeroLayout = styled.section`
     background-clip:text; -webkit-background-clip:text;
     animation:${lightSweep} 3.5s ease-in-out infinite alternate;
   }
-  .journey-scene { position:absolute; top:calc((73.3svh - 60px) * (1 - var(--expand))); left:calc(11.85% * (1 - var(--expand))); width:calc(76.3% + 23.7% * var(--expand)); height:100svh; border-radius:calc(170px * (1 - var(--expand))) calc(170px * (1 - var(--expand))) 0 0; background:#f5f8fb; overflow:hidden; isolation:isolate; }
+  .journey-scene { position:absolute; top:calc((73.3svh - 60px) * (1 - var(--expand))); left:calc(11.85% * (1 - var(--expand))); width:calc(76.3% + 23.7% * var(--expand)); height:100svh; border-radius:calc(170px * (1 - var(--expand))) calc(170px * (1 - var(--expand))) 0 0; background:#5386b9; overflow:hidden; isolation:isolate; }
   h1 { animation:${revealTitle} 1200ms cubic-bezier(.22,.7,.3,1) both paused; }
   .journey-scene { animation:${revealScene} 2700ms cubic-bezier(.22,.7,.3,1) 550ms both paused; }
   &[data-intro='playing'] {
     h1,.journey-scene { animation-play-state:running; }
   }
   @media(max-width:800px) {
-    height:200svh;
+    height:330svh;
     .journey-title { top:calc(38svh - 60px); padding:0 20px; }
     h1 { font-size:8vw; }
     .brand-phrase, .title-break { display:block; }
