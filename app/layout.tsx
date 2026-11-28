@@ -10,5 +10,5 @@ export const metadata = {
 };
 
 export default function RootLayout({children}: React.PropsWithChildren) {
- return <html lang="ko"><head><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" /></head><body><StyledComponentsRegistry><GlobalStyles />{children}</StyledComponentsRegistry></body></html>;
+ return <html lang="ko"><head><link rel="preload" href="/fonts/outfit-500.ttf" as="font" type="font/ttf" crossOrigin="anonymous" /><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" /></head><body><StyledComponentsRegistry><GlobalStyles />{children}</StyledComponentsRegistry></body></html>;
 }

@@ -640,7 +640,7 @@ export function createExperience(container: HTMLElement) {
     camera.position.copy(focus).add(offset);
     camera.lookAt(focus);
     head.rotation.x = 0.23 + p * 0.06;
-    background.set('#edf5ff');
+    background.set('#5386b9');
     sun.position.set(8, 15, 12);
     sun.target.position.set(-1, 1, 0);
     renderer.render(scene, camera);
@@ -651,6 +651,10 @@ export function createExperience(container: HTMLElement) {
     else update(lastP, lastMobile, lastReduce);
   }
   function resize() {
+    if (disposed) return;
+    // 같은 크기의 관찰 알림에서 버퍼를 다시 지우지 않습니다.
+    if (width === container.clientWidth && height === container.clientHeight) return;
+    if (!container.clientWidth || !container.clientHeight) return;
     width = container.clientWidth;
     height = container.clientHeight;
     renderer.setSize(width, height, false);

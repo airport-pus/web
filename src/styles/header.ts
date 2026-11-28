@@ -9,9 +9,18 @@ export const SiteHeader = styled.header`
     position: sticky;
     top: 0;
     z-index: 10;
-    background: rgba(255,255,255,.92);
-    /* 기존 화면과 동일하게 WebKit 선언을 적용한다. */
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255,255,255,.68);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: transform 280ms cubic-bezier(.22,.7,.3,1);
+  }
+  :where(&).top[data-hidden='true'] {
+    transform: translateY(-100%);
+    pointer-events: none;
+  }
+  :where(&).top:focus-within {
+    transform: translateY(0);
+    pointer-events: auto;
   }
   :where(&).top .wrap {
     display: flex;

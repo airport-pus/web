@@ -4,6 +4,7 @@ import { createGlobalStyle } from 'styled-components';
 
 // 공통 기본값과 레이아웃 유틸리티의 적용 순서를 유지한다.
 export const GlobalStyles = createGlobalStyle`
+  @font-face { font-family: Outfit; src: url("/fonts/outfit-500.ttf") format("truetype"); font-style:normal; font-weight:500; font-display:swap; }
   :root {
     --ink: #191f28;
     --ink2: #4e5968;

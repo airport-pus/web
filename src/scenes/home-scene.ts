@@ -38,7 +38,7 @@ function addRoom(home: THREE.Group, { soft, silver }: HomeMaterials) {
   const homeFloor = addMesh(
     home,
     new THREE.PlaneGeometry(200, 200),
-    new THREE.MeshBasicMaterial({ color: '#edf5ff', toneMapped: false }),
+    new THREE.MeshBasicMaterial({ color: '#5386b9', toneMapped: false }),
     0,
     -0.12,
     0,
@@ -58,7 +58,7 @@ function addRoom(home: THREE.Group, { soft, silver }: HomeMaterials) {
   const homeWall = addMesh(
     home,
     new THREE.PlaneGeometry(200, 100),
-    new THREE.MeshBasicMaterial({ color: '#edf5ff', toneMapped: false }),
+    new THREE.MeshBasicMaterial({ color: '#5386b9', toneMapped: false }),
     0,
     45,
     -4.7,
