@@ -1,9 +1,11 @@
 'use client';
+import { withBasePath } from '../../site-path';
+
 import { useEffect, useRef } from 'react';
 import type { FeatureKind } from './features';
 export function playbackAsset(kind: FeatureKind, format: 'webp' | 'mp4', zone = 1) {
   const name = kind === 'crowd' && zone !== 1 ? `crowd-${zone + 1}` : kind;
-  return `/assets/feature-playback/${name}.${format}?v=${name.startsWith('crowd') ? 12 : name === 'parking' ? 5 : 2}`;
+  return withBasePath(`/assets/feature-playback/${name}.${format}?v=${name.startsWith('crowd') ? 12 : name === 'parking' ? 5 : 2}`);
 }
 
 export default function ScenePlayback({ kind, zone }: { kind: FeatureKind; zone: number }) {

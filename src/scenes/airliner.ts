@@ -1,3 +1,4 @@
+import { withBasePath } from '../site-path';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addMesh } from './scene-primitives';
@@ -21,7 +22,7 @@ function tailBrandTexture() {
     }
     texture.needsUpdate=true;
   };
-  logo.onload=draw;logo.src='/brand/symbol.svg';
+  logo.onload=draw;logo.src=withBasePath('/brand/symbol.svg');
   draw();return texture;
 }
 

@@ -1,4 +1,6 @@
 'use client';
+import { withBasePath } from '../../site-path';
+
 import { useEffect, useRef, useState } from 'react';
 import { features, gimhaeSegments, type FeatureKind } from './features';
 import ScenePlayback, { playbackAsset } from './ScenePlayback';
@@ -94,7 +96,7 @@ export default function TravelShowcase() {
     <Showcase ref={section} id="app-features" aria-labelledby="app-features-title">
       <header className="feature-intro">
         <h2 id="app-features-title">
-          공항 가기 전 <img className="home-icon" src="/brand/home.svg" alt="" />집에서도 <img src="/brand/symbol.svg" alt="" />
+          공항 가기 전 <img className="home-icon" src={withBasePath('/brand/home.svg')} alt="" />집에서도 <img src={withBasePath('/brand/symbol.svg')} alt="" />
           <span className="brand-name">산들로</span>
         </h2>
         <p>

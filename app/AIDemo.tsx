@@ -1,4 +1,6 @@
 'use client';
+import { withBasePath } from '../src/site-path';
+
 import { useEffect, useRef, useState } from 'react';
 
 const examples = ['김해에서 제주까지 얼마나 걸려?', '김해공항 지금 혼잡해?', '김해공항 주차 자리 있어?'];
@@ -37,7 +39,7 @@ export default function AIDemo() {
       <div className="demo-examples">{examples.map((text, index) => <button key={text} disabled={used} onClick={() => submit(text)} type="button">{['비행시간', '공항 혼잡도', '주차 안내'][index]}</button>)}</div>
       <p className="demo-disclosure">{used ? '이번 체험을 사용했어요.' : '한 번 체험할 수 있어요.'} 예시 데이터로 답변해요.</p><button className="demo-connect mcp-connect" type="button">MCP 연결 안내 ↗</button>
     </div>
-    {question && <div className="ai-preview"><div className="chat-window"><div className="chat-header"><span><img src="/brand/symbol.svg" alt="" width="20" height="20" />산들 AI</span><span>미리보기</span></div>
+    {question && <div className="ai-preview"><div className="chat-window"><div className="chat-header"><span><img src={withBasePath('/brand/symbol.svg')} alt="" width="20" height="20" />산들 AI</span><span>미리보기</span></div>
       <div className="demo-conversation" aria-live="polite" aria-atomic="true" aria-busy={busy}>
         <div className="chat-question">{question}</div>{busy ? <p className="demo-loading">응답 예시를 준비하고 있어요…</p> : result && <div className="demo-answer"><p>{result.text}</p>{result.keys.map(key => <div className="demo-result" key={key}><strong>{cards[key].title}</strong><dl>{cards[key].rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></div>)}</div>}
       </div></div></div>}

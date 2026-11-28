@@ -1,4 +1,6 @@
 'use client';
+import { withBasePath } from '../src/site-path';
+
 
 import { useState } from 'react';
 
@@ -36,7 +38,7 @@ export default function TicketReminder() {
           <div className="pass-bottom"><span>출발 시각</span><b>14:20</b></div>
         </div>
         <div className="push-message" key={selected.minutes}>
-          <img src="/brand/app-icon.svg" alt="" width="44" height="44" />
+          <img src={withBasePath('/brand/app-icon.svg')} alt="" width="44" height="44" />
           <div className="notification-body">
             <div className="notification-meta"><span>산들</span><time dateTime={clock} aria-label={displayTime + ' 알림 도착'}>{displayTime}</time></div>
             <strong>출발까지 {selected.label} 남았어요</strong>

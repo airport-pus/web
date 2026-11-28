@@ -1,3 +1,4 @@
+import { withBasePath } from '../site-path';
 import { buildPackingCase } from './packing-case';
 import * as THREE from 'three';
 import { buildTraveler } from './traveler';
@@ -205,7 +206,7 @@ function addTravelers(
     { ...face, shirt, trousers },
     { pose: 'phone', hairStyle: 0 },
   );
-  const homePhone = phone(home, '/assets/sandeul-home-screen.svg');
+  const homePhone = phone(home, withBasePath('/assets/sandeul-home-screen.svg'));
   homePhone.scale.setScalar(0.17);
   homePhone.position.set(-1.73, 2.13, 1.46);
   homePhone.rotation.set(0.45, Math.PI + 0.08, 0);

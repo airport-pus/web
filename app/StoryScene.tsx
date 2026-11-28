@@ -1,4 +1,6 @@
 'use client';
+import { withBasePath } from '../src/site-path';
+
 import { useEffect, useRef, useState } from 'react';
 
 export default function StoryScene({ kind, label }: {kind: string; label: string}) {
@@ -15,6 +17,6 @@ export default function StoryScene({ kind, label }: {kind: string; label: string
   }, [kind]);
   return <div className={`story-scene scene-${kind}`} role="img" aria-label={label}>
     <div className="scene-canvas" ref={host} aria-hidden="true" />
-    {failed && <div className="scene-fallback"><img src="/assets/airport-connection.png" width="70" height="70" alt="" /><span>{label}</span></div>}
+    {failed && <div className="scene-fallback"><img src={withBasePath('/assets/airport-connection.png')} width="70" height="70" alt="" /><span>{label}</span></div>}
   </div>;
 }

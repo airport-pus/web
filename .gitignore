@@ -14,3 +14,5 @@ playwright-report/
 # Generated TypeScript files
 next-env.d.ts
 *.tsbuildinfo
+
+.next-pages/

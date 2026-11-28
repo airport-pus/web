@@ -1,3 +1,4 @@
+import { withBasePath } from '../../site-path';
 import styled from 'styled-components';
 import { landingTitle } from '../../styles/hero';
 export const Showcase = styled.section`
@@ -116,7 +117,7 @@ export const Showcase = styled.section`
     isolation: isolate;
     overflow: hidden;
     height: clamp(350px, 31vw, 430px);
-    background: #d3e8fa url('/assets/feature-sky.webp') center/cover;
+    background: #d3e8fa url("${withBasePath('/assets/feature-sky.webp')}") center/cover;
   }
   article:first-child .feature-visual {
     border-radius: 32px 0 0 32px;

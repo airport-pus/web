@@ -1,3 +1,4 @@
+import { withBasePath } from '../src/site-path';
 import { SiteHeader } from '../src/styles/header';
 import JourneyHero from './JourneyHero';
 import ProductStorySection from './ProductStorySection';
@@ -12,7 +13,7 @@ export default function HomePage() {
       <SiteHeader className="top">
         <div className="wrap">
           <a className="brand" href="#" aria-label="산들 홈">
-            <img src="/brand/sandeul.svg" alt="" width="250" height="64" />
+            <img src={withBasePath('/brand/sandeul.svg')} alt="" width="250" height="64" />
           </a>
           <nav aria-label="주요 메뉴">
             <button type="button" id="mcp-button" className="mcp-connect">
@@ -32,7 +33,7 @@ export default function HomePage() {
       <LandingEndingSection>
         <SiteFooter>
           <div className="section-shell">
-            <img src="/brand/sandeul.svg" width="90" height="24" alt="Sandeul" />
+            <img src={withBasePath('/brand/sandeul.svg')} width="90" height="24" alt="Sandeul" />
             <div className="footer-info">
               <div className="contact">
                 <a href="mailto:contact@sandeul.app">E. contact@sandeul.app</a>
@@ -40,7 +41,7 @@ export default function HomePage() {
               <span>© 2026 Sandeul. All rights reserved.</span>
             </div>
             <nav aria-label="서비스 정보">
-              <a href="/data">데이터 안내</a>
+              <a href={withBasePath('/data')}>데이터 안내</a>
               <a href="https://github.com/airport-pus/web" target="_blank" rel="noopener noreferrer">
                 개발자 GitHub ↗
               </a>

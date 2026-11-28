@@ -1,3 +1,4 @@
+import { withBasePath } from '../site-path';
 import { buildAirliner } from './airliner';
 import { buildTerminalFilm } from './terminal-film';
 import { createMaterial as mat, addMesh as mesh, roundedShape } from './scene-primitives';
@@ -267,7 +268,7 @@ export function createExperience(container: HTMLElement) {
   const flight = group(1);
   const flightFloor = mesh(flight, new THREE.CircleGeometry(11, 96), mat('#ffffff'), 1, -0.2, 0);
   flightFloor.rotation.x = -Math.PI / 2;
-  const device = phone(flight, '/assets/sandeul-flight.svg');
+  const device = phone(flight, withBasePath('/assets/sandeul-flight.svg'));
   device.position.set(3, 3.3, 0);
   device.rotation.set(-0.08, -0.3, -0.12);
   const ticket = new THREE.Group();

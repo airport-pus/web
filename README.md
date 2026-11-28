@@ -20,7 +20,9 @@ npm run start
 ```
 
 로컬 주소: http://127.0.0.1:5173/
-배포하지 않았습니다.
+GitHub Pages 배포 주소: https://airport-pus.github.io/web/
+
+`npm run build:pages`로 `/web/` 경로를 사용하는 정적 파일을 `.next-pages/`에 생성합니다. 이 폴더 내용을 `gh-pages` 브랜치에 게시합니다. 일반 `npm run dev`는 기존 로컬 루트 경로를 유지합니다.
 
 
 ## 기능 소개 섹션
